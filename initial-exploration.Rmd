@@ -1,0 +1,176 @@
+---
+title: "Untitled"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+	echo = TRUE,
+	message = FALSE,
+	warning = FALSE
+)
+```
+
+# Locations
+
+Import locations and tidy data
+
+```{r}
+library(tidyverse)
+letter_locations <- read_csv("data/processed_unique_locations.csv")
+colnames(letter_locations) <- tolower(make.names(colnames(letter_locations)))
+str(letter_locations)
+
+letter_locations <- letter_locations %>%
+  select(-x9, -x10, -x11, -x12, -x13) %>%
+  filter(!is.na(longitude))
+
+## Fix bad encodings
+letter_locations$country <-
+  gsub("\xa7", "ß", letter_locations$country) %>% # \xa7 is used instead of ß
+  gsub("\x8a", "ä", .) # \x8a is used instead of ä
+
+letter_locations$city <-
+  gsub("\xa7", "ß", letter_locations$city) %>% # \xa7 is used instead of ß
+  gsub("\x8a", "ä", .) %>% # \x8a is used instead of ä
+  gsub("\x9a", "ö", .) %>%
+  gsub("\x9f", "ü", .) %>%
+  gsub("'", "", .) %>%
+  gsub("\x8e", "é", .)
+
+letter_locations$brackets <-
+  gsub("\xa7", "ß", letter_locations$brackets) %>% # \xa7 is used instead of ß
+  gsub("\x8a", "ä", .) %>%# \x8a is used instead of ä
+  gsub("\x9a", "ö", .) %>%
+  gsub("\x9f", "ü", .)
+
+## Test encoding with: parse(text = paste0("'", letter_locations$country , "'"))
+```
+
+Basic map
+
+```{r}
+library(leaflet)
+letter_locations %>%
+  leaflet() %>%
+  addTiles() %>%
+  addCircleMarkers(popup = ~city)
+```
+
+Labeller
+
+```{r}
+location_label <- function(country = NA, city = NA, brackets = NA){
+  paste0(
+    "<p>Country:",
+    country,
+    "</p>",
+    "<p>City:",
+    city,
+    "</p>",
+    "<p>Further Info:",
+    brackets,
+    "</p>"
+  )
+}
+```
+
+Labelled locations, with clustering
+
+```{r}
+letter_locations %>%
+  leaflet() %>%
+  addTiles() %>%
+  addCircleMarkers(popup = ~location_label(country, city, brackets), clusterOptions = markerClusterOptions())
+```
+
+# Letters
+
+```{r}
+## Converting the xlsx to csv interactively introduced hundreds of empty columns, this code fixes
+# letters_for_geo_viz <- read_csv("data/letters_for_geoviz.csv")
+# colnames(letters_for_geo_viz) <- gsub(" ", ".", colnames(letters_for_geo_viz)) %>%
+#   tolower()
+# write_csv(x = letters_for_geo_viz[, colnames(letters_for_geo_viz)[!grepl("x", colnames(letters_for_geo_viz))]],
+#           path = "data/letters_for_geoviz.csv")
+
+
+letters_for_geo_viz <- read_csv("data/letters_for_geoviz.csv")
+
+library(lubridate)
+letters_for_geo_viz$date <- dmy(letters_for_geo_viz$date)
+
+## Fix bad encodings
+letters_for_geo_viz$location.sender <-
+  gsub("\xa7", "ß", letters_for_geo_viz$location.sender) %>% # \xa7 is used instead of ß
+  gsub("\x8a", "ä", .) %>% # \x8a is used instead of ä
+  gsub("\x9a", "ö", .) %>%
+  gsub("\x9f", "ü", .) %>%
+  gsub("'", "", .) %>%
+  gsub("\x8e", "é", .)
+
+letters_for_geo_viz$location.receiver <-
+  gsub("\xa7", "ß", letters_for_geo_viz$location.receiver) %>% # \xa7 is used instead of ß
+  gsub("\x8a", "ä", .) %>% # \x8a is used instead of ä
+  gsub("\x9a", "ö", .) %>%
+  gsub("\x9f", "ü", .) %>%
+  gsub("'", "", .) %>%
+  gsub("\x8e", "é", .)
+```
+
+Locations given as "location sender" that do not appear in the unique locations:
+
+```{r}
+setdiff(letters_for_geo_viz$location.sender, letter_locations$location.string)
+```
+
+Locations given as "location receiver" that do not appear in the unique locations:
+
+```{r}
+setdiff(letters_for_geo_viz$location.receiver, letter_locations$location.string)
+```
+
+
+
+# Routes
+
+Make routes
+
+```{r}
+locations_df <- letter_locations %>%
+  mutate(loc.id = 1:nrow(letter_locations))
+
+library(plyr)
+
+letters_for_geo_viz <- letters_for_geo_viz %>%
+  mutate(send.loc = as.numeric(mapvalues(location.sender, from = locations_df$location.string, to = locations_df$loc.id, warn_missing = F))) %>%
+  mutate(receive.loc = as.numeric(mapvalues(location.receiver, from = locations_df$location.string, to = locations_df$loc.id, warn_missing = F)))
+```
+
+As a graph, because why not?
+
+```{r}
+edges <- data.frame(
+  from = letters_for_geo_viz$send.loc,
+  to = letters_for_geo_viz$receive.loc
+) %>%
+  na.omit() %>%
+  unique()
+
+nodes <- data.frame(
+  id = locations_df$loc.id,
+  title = paste0(locations_df$country, ", ", locations_df$city),
+  label = locations_df$country
+) %>%
+  na.omit()
+
+library(igraph)
+library(visNetwork)
+
+igraph_letters <- graph.data.frame(edges, vertices = nodes)
+
+visIgraph(igraph_letters,idToLabel = F)
+```
+
+
+
