@@ -17,13 +17,8 @@ Import locations and tidy data
 
 ```{r}
 library(tidyverse)
-letter_locations <- read_csv("data/processed_unique_locations.csv")
+letter_locations <- read_csv("data/all_locations.csv")
 colnames(letter_locations) <- tolower(make.names(colnames(letter_locations)))
-str(letter_locations)
-
-letter_locations <- letter_locations %>%
-  select(-x9, -x10, -x11, -x12, -x13) %>%
-  filter(!is.na(longitude))
 
 ## Fix bad encodings
 letter_locations$country <-
@@ -38,12 +33,11 @@ letter_locations$city <-
   gsub("'", "", .) %>%
   gsub("\x8e", "é", .)
 
-letter_locations$brackets <-
-  gsub("\xa7", "ß", letter_locations$brackets) %>% # \xa7 is used instead of ß
-  gsub("\x8a", "ä", .) %>%# \x8a is used instead of ä
-  gsub("\x9a", "ö", .) %>%
-  gsub("\x9f", "ü", .)
-
+# letter_locations$brackets <-
+#   gsub("\xa7", "ß", letter_locations$brackets) %>% # \xa7 is used instead of ß
+#   gsub("\x8a", "ä", .) %>% # \x8a is used instead of ä
+#   gsub("\x9a", "ö", .) %>%
+#   gsub("\x9f", "ü", .)
 ## Test encoding with: parse(text = paste0("'", letter_locations$country , "'"))
 ```
 
@@ -67,9 +61,6 @@ location_label <- function(country = NA, city = NA, brackets = NA){
     "</p>",
     "<p>City:",
     city,
-    "</p>",
-    "<p>Further Info:",
-    brackets,
     "</p>"
   )
 }
@@ -95,7 +86,7 @@ letter_locations %>%
 #           path = "data/letters_for_geoviz.csv")
 
 
-letters_for_geo_viz <- read_csv("data/letters_for_geoviz.csv")
+letters_for_geo_viz <- read_csv("data/all_letters.csv")
 
 library(lubridate)
 letters_for_geo_viz$date <- dmy(letters_for_geo_viz$date)
@@ -129,8 +120,6 @@ Locations given as "location receiver" that do not appear in the unique location
 ```{r}
 setdiff(letters_for_geo_viz$location.receiver, letter_locations$location.string)
 ```
-
-
 
 # Routes
 
