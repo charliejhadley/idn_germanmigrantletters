@@ -136,6 +136,9 @@ secondset_locations <- secondset_locations %>%
   )) %>%
   select(-city.with.brackets, -brackets, -ambiguous) # These don't exist in the initial set, just throw away
 
+str(firstset_letters)
+
+
 ## ====================================== Combining Letters
 ## ======================================
 
@@ -143,6 +146,23 @@ combined_letters <- firstset_letters %>%
   rename(id.letter = document.name) %>%
   select(-x1) %>%
   full_join(secondset_letters)
+
+## Fix bad encodings
+combined_letters$location.sender <-
+  gsub("\xa7", "ß", combined_letters$location.sender) %>% # \xa7 is used instead of ß
+  gsub("\x8a", "ä", .) %>% # \x8a is used instead of ä
+  gsub("\x9a", "ö", .) %>%
+  gsub("\x9f", "ü", .) %>%
+  gsub("'", "", .) %>%
+  gsub("\x8e", "é", .)
+
+combined_letters$location.receiver <-
+  gsub("\xa7", "ß", combined_letters$location.receiver) %>% # \xa7 is used instead of ß
+  gsub("\x8a", "ä", .) %>% # \x8a is used instead of ä
+  gsub("\x9a", "ö", .) %>%
+  gsub("\x9f", "ü", .) %>%
+  gsub("'", "", .) %>%
+  gsub("\x8e", "é", .)
 
 write_csv(combined_letters, "data/all_letters.csv")
 
@@ -153,5 +173,18 @@ write_csv(combined_letters, "data/all_letters.csv")
 combined_locations <-
   full_join(firstset_locations, secondset_locations) %>%
   distinct()
+
+## Fix bad encodings
+combined_locations$country <-
+  gsub("\xa7", "ß", combined_locations$country) %>% # \xa7 is used instead of ß
+  gsub("\x8a", "ä", .) # \x8a is used instead of ä
+
+combined_locations$city <-
+  gsub("\xa7", "ß", combined_locations$city) %>% # \xa7 is used instead of ß
+  gsub("\x8a", "ä", .) %>% # \x8a is used instead of ä
+  gsub("\x9a", "ö", .) %>%
+  gsub("\x9f", "ü", .) %>%
+  gsub("'", "", .) %>%
+  gsub("\x8e", "é", .)
 
 write_csv(combined_locations, "data/all_locations.csv")
