@@ -16,24 +16,24 @@ output$journeys_date_slider_ui <- renderUI({
     return()
   }
   
-  # sliderInput(
-  #   "journeys_date_slider",
-  #   "Date Range",
-  #   min = min(letters_df$date, na.rm = T),
-  #   max = max(letters_df$date, na.rm = T),
-  #   value = c(
-  #     min(letters_df$date, na.rm = T),
-  #     max(letters_df$date, na.rm = T)
-  #   )
-  # )
-  
-  dateRangeInput(
-    'journeys_date_slider',
-    label = 'Date range input: yyyy-mm-dd',
-    start = min(letters_df$date, na.rm = T),
-    end = max(letters_df$date, na.rm = T)
+  sliderInput(
+    "journeys_date_slider",
+    "Date Range",
+    min = min(letters_df$date, na.rm = T),
+    max = max(letters_df$date, na.rm = T),
+    value = c(
+      min(letters_df$date, na.rm = T),
+      max(letters_df$date, na.rm = T)
+    )
   )
   
+  # dateRangeInput(
+  #   'journeys_date_slider',
+  #   label = 'Date range input: yyyy-mm-dd',
+  #   start = min(letters_df$date, na.rm = T),
+  #   end = max(letters_df$date, na.rm = T)
+  # )
+  # 
   
 })
 
@@ -131,6 +131,7 @@ output$letter_journeys_map <- renderLeaflet({
       radius = 1.8,
       stroke = TRUE,
       color = "#fdae61",
+      popup = ~ label_termini_sender(sender.location, total.sent),
       opacity = 0.6
     ) %>%
     addCircleMarkers(
@@ -141,6 +142,7 @@ output$letter_journeys_map <- renderLeaflet({
       radius = 1.8,
       stroke = TRUE,
       color = "#d7191c",
+      popup = ~ label_termini_receiver(receiver.location, total.received),
       opacity = 0.6
     ) %>% {
       shinyjs::hide(id = "loading-journeys",

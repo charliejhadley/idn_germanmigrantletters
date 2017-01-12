@@ -1,15 +1,4 @@
 
-rnorm
-
-## ============== Shapefiles 
-states_shapefiles <- readOGR(
-  dsn = "data/shapefiles/",
-  layer = "contiguous_states",
-  verbose = F
-)
-
-proj4_string <- states_shapefiles@proj4string
-
 ## ============== Convert df to SPDF
 
 spdf_letters <- function(letters.data = NA, send.or.receive = "both"){
@@ -72,17 +61,41 @@ count_letters_in_states <- function(letters.spdf = NA){
   polygons_with_tallies
 }
 
+count_letters_in_regions <- function(letters.spdf, shape.files){
+  shapefiles <- shape.files
+  
+  contiguous_counts <-
+    poly.counts(pts = letters.spdf, polys = shapefiles)
+  contiguous_counts
+  
+  contiguous_counts_df <- data.frame(contiguous_counts)
+  shapefiles@data$Count.of.Send.Locations <-
+    contiguous_counts_df$contiguous_counts
+  # Return for use
+  polygons_with_tallies <- shapefiles
+  polygons_with_tallies
+}
+
+## ============== Empty states
+
+state_outline_only <- {
+  shapefiles <- states_shapefiles
+}
+
 ## ============== Great circles
 ## Refer to http://personal.tcu.edu/kylewalker/interactive-flow-visualization-in-r.html
 
 letter_journey_lines <- function(letters.data = NA) {
   ## Tally letters for polylines
   tallied_letters <- letters.data %>%
-    mutate(journey = paste(sender.latlong.string, receiver.latlong.string)) %>%
-    group_by(journey) %>% # unique journeys
+    group_by(journey) %>%
     mutate(number.of.letters = n()) %>%
     ungroup() %>%
-    distinct()
+    select(-one_of(uselesscols_letters_df)) %>%
+    select(-date) %>%
+    unique()
+  
+  print(tallied_letters)
   
   
   letter_journeys <- gcIntermediate(
@@ -105,15 +118,21 @@ journey_termini_data <- function(letters.data = NA, send.or.receive = NA){
   switch(send.or.receive,
          "sender" = {
            letters.data %>%
-             select(-contains("receiver"), -starts_with("social")) %>% # remove receiver cols
-             select(-id.letter, -bytes, -na.ger, -date) %>% # remove unique cols
-             distinct()
+             select(-contains("receiver")) %>% # remove receiver cols
+             select(-one_of(uselesscols_letters_df), -date) %>% # remove unique cols
+             distinct() %>%
+             group_by(sender.location) %>%
+             mutate(total.sent = n()) %>%
+             ungroup()
          },
          "receiver" = {
            letters.data %>%
-             select(-contains("sender"), -starts_with("social")) %>% # remove receiver cols
-             select(-id.letter, -bytes, -na.ger, -date) %>% # remove unique cols
-             distinct()
+             select(-contains("sender")) %>% # remove receiver cols
+             select(-one_of(uselesscols_letters_df), -date) %>% # remove unique cols
+             distinct() %>%
+             group_by(receiver.location) %>%
+             mutate(total.received = n()) %>%
+             ungroup()
          })
 }
 
@@ -127,5 +146,24 @@ label_journey <- function(sender.location = NA, receiver.location = NA, number.o
     "</p>"
   )
 }
+
+label_termini_sender <- function(sender.location, total.sent){
+  paste0(
+    "<p>Send Location: ", sender.location,
+    "</p>",
+    "<p>Number of letters sent: ", total.sent,
+    "</p>"
+  )
+}
+
+label_termini_receiver <- function(receiver.location, total.received){
+  paste0(
+    "<p>Send Location: ", receiver.location,
+    "</p>",
+    "<p>Number of letters received: ", total.received,
+    "</p>"
+  )
+}
+
 
 

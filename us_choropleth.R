@@ -32,31 +32,88 @@ output$choropleth_date_slider_ui <- renderUI({
 ## ======================== choropleth_filtered_letters
 ## ================================================
 
-choropleth_spdf_tally <- eventReactive(
-  c(input$choropleth_how_tally, input$choropleth_date_slider, input$choropleth_checkbox_datefilter),
-{
-  # if(is.null(input$choropleth_checkbox_datefilter)){
-  #   return()
-  # }
-  
-  choropleth_filtered_letters <- letters_df %>%
-    filter(!is.na(sender.latitude)) # sender latitude must exist for this visualisation
-  
-  if(input$choropleth_checkbox_datefilter){
-    choropleth_filtered_letters %>%
-      spdf_letters(send.or.receive = input$choropleth_how_tally) %>%
-      count_letters_in_states()
-  } else {
-    choropleth_filtered_letters %>%
-      filter(!is.na(date)) %>%
-      filter(date >= input$choropleth_date_slider[1] &
-               date <= input$choropleth_date_slider[2]) %>%
-      spdf_letters(send.or.receive = input$choropleth_how_tally) %>%
-      count_letters_in_states()
-  }
+# choropleth_spdf_tally <- eventReactive(
+#   c(input$choropleth_how_tally, input$choropleth_date_slider, input$choropleth_checkbox_datefilter, input$type_of_region),
+# {
+# 
+#   choropleth_filtered_letters <- letters_df %>%
+#     filter(!is.na(sender.latitude)) # sender latitude must exist for this visualisation
+#   
+#   if(input$choropleth_checkbox_datefilter){
+#     choropleth_filtered_letters <- choropleth_filtered_letters %>%
+#       spdf_letters(send.or.receive = input$choropleth_how_tally) %>%
+#       count_letters_in_regions(shape.files = switch(input$type_of_region,
+#                                                     "states" = states_shapefiles,
+#                                                     "counties" = counties_shapefiles,
+#                                                     "congressional districts" = congressional_districts_shapefiles))
+#   } else {
+#     choropleth_filtered_letters <- choropleth_filtered_letters %>%
+#       filter(!is.na(date)) %>%
+#       filter(date >= input$choropleth_date_slider[1] &
+#                date <= input$choropleth_date_slider[2])
+#     
+#     if(nrow(choropleth_filtered_letters) != 0){
+#       choropleth_filtered_letters %>%
+#       spdf_letters(send.or.receive = input$choropleth_how_tally) %>%
+#         count_letters_in_regions(shape.files = switch(input$type_of_region,
+#                                                       "states" = states_shapefiles,
+#                                                       "counties" = counties_shapefiles,
+#                                                       "congressional districts" = congressional_districts_shapefiles))
+#     } else {
+#       NA # no letters
+#     }
+#       
+#   }
+#   
+# },
+# ignoreNULL = FALSE)
 
-},
-ignoreNULL = FALSE)
+choropleth_spdf_letters <- eventReactive(
+  c(input$choropleth_how_tally, input$choropleth_date_slider, input$choropleth_checkbox_datefilter),
+  {
+    
+    choropleth_filtered_letters <- letters_df %>%
+      filter(!is.na(sender.latitude)) # sender latitude must exist for this visualisation
+    
+    if(input$choropleth_checkbox_datefilter){
+      choropleth_filtered_letters <- choropleth_filtered_letters %>%
+        spdf_letters(send.or.receive = input$choropleth_how_tally)
+    } else {
+      choropleth_filtered_letters <- choropleth_filtered_letters %>%
+        filter(!is.na(date)) %>%
+        filter(date >= input$choropleth_date_slider[1] &
+                 date <= input$choropleth_date_slider[2])
+      
+      if(nrow(choropleth_filtered_letters) != 0){
+        choropleth_filtered_letters %>%
+          spdf_letters(send.or.receive = input$choropleth_how_tally)
+      } else {
+        NA # no letters
+      }
+    }
+  },
+  ignoreNULL = FALSE)
+
+
+choropleth_spdf_tally <- eventReactive(
+  c(input$type_of_region),
+  {
+    
+    if(class(choropleth_spdf_letters()) == "SpatialPointsDataFrame"){
+      
+      choropleth_spdf_letters() %>%
+        count_letters_in_regions(shape.files = switch(input$type_of_region,
+                                                      "states" = states_shapefiles,
+                                                      "counties" = counties_shapefiles,
+                                                      "congressional districts" = congressional_districts_shapefiles))
+    } else {
+      NA # no letters in range
+    }
+  },
+  ignoreNULL = FALSE)
+
+
+
 
 ## ======================== us_states_choropleth
 ## ================================================
@@ -67,6 +124,12 @@ output$us_states_choropleth <- renderLeaflet({
     return()
   }
   
+  if(!input$choropleth_checkbox_datefilter){
+    if(is.null(input$choropleth_date_slider)){
+      return()
+    }
+  }
+
   if(is.null(choropleth_spdf_tally())){
     shinyjs::show(id = "loading-choropleth", anim = TRUE, animType = "fade")
   } else {
@@ -86,28 +149,49 @@ output$us_states_choropleth <- renderLeaflet({
       "<p>Number of letters: ", number_of_points, "</p>")
   }
   
-  choropleth_spdf_tally() %>%
-    leaflet() %>%
-    addTiles() %>%
-    addPolygons(
-      stroke = TRUE,
-      color = "#ffffff",
-      smoothFactor = 0.2,
-      fillOpacity = 0.8,
-      fillColor = ~ palette(Count.of.Send.Locations),
-      weight = 1,
-      popup = ~ region_labeller(number_of_points = Count.of.Send.Locations)
-      # popup = ~region_labeller(state_name = State_Name, number_of_points = var)
-    ) %>%
-    addLegend(
-      position = 'topleft',
-      ## choose bottomleft, bottomright, topleft or topright
-      colors = c("#cccccc", brewer.pal(5, "YlGnBu")),
-      labels = c("0", "1-5", "5-10", "10-20", "20-50", "50-350"),
-      ## legend labels (only min and max)
-      opacity = 0.6,
-      ##transparency again
-      title = "relative<br>amount"
-    )
+  choropleth_spdf_tally <- choropleth_spdf_tally()
   
-})
+  if(class(choropleth_spdf_tally) == "SpatialPolygonsDataFrame"){
+    choropleth_spdf_tally() %>%
+      leaflet() %>%
+      addTiles() %>%
+      addPolygons(
+        stroke = TRUE,
+        color = "#ffffff",
+        smoothFactor = 0.2,
+        fillOpacity = 0.8,
+        fillColor = ~ palette(Count.of.Send.Locations),
+        weight = 1,
+        popup = ~ region_labeller(number_of_points = Count.of.Send.Locations)
+        # popup = ~region_labeller(state_name = State_Name, number_of_points = var)
+      ) %>%
+      addLegend(
+        position = 'topleft',
+        ## choose bottomleft, bottomright, topleft or topright
+        colors = c("#cccccc", brewer.pal(5, "YlGnBu")),
+        labels = c("0", "1-5", "5-10", "10-20", "20-50", "50-350"),
+        ## legend labels (only min and max)
+        opacity = 0.6,
+        ##transparency again
+        title = "relative<br>amount"
+      )
+  } else {
+    leaflet(state_outline_only) %>%
+      addTiles() %>%
+      addPolygons(
+        stroke = TRUE,
+        color = "#808080",
+        smoothFactor = 0.2,
+        fillOpacity = 0.8,
+        weight = 1
+      ) %>%
+      addLegend(
+        position = 'topleft',
+        colors = c("#cccccc", brewer.pal(5, "YlGnBu")),
+        labels = c("0", "1-5", "5-10", "10-20", "20-50", "50-350"),
+        opacity = 0.6,
+        title = "relative<br>amount"
+      )
+  }
+  
+  })

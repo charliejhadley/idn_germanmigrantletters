@@ -113,9 +113,9 @@ colnames(secondset_letters) <-
   tolower(make.names(colnames(secondset_letters)))
 
 secondset_letters <- secondset_letters %>%
-  mutate(date = dmy(date))
-
-
+  mutate(date = dmy(date)) %>%
+  rename(sender.location = location.sender,
+         receiver.location = location.receiver)
 
 secondset_locations <-
   read_csv("data-raw/second_set/secondset_locations.csv")
@@ -130,14 +130,11 @@ secondset_locations <- secondset_locations %>%
 secondset_locations <- secondset_locations %>%
   filter(location.string %in% unique(
     c(
-      secondset_letters$location.sender,
-      secondset_letters$location.receiver
+      secondset_letters$sender.location,
+      secondset_letters$receiver.location
     )
   )) %>%
   select(-city.with.brackets, -brackets, -ambiguous) # These don't exist in the initial set, just throw away
-
-str(firstset_letters)
-
 
 ## ====================================== Combining Letters
 ## ======================================
@@ -148,16 +145,16 @@ combined_letters <- firstset_letters %>%
   full_join(secondset_letters)
 
 ## Fix bad encodings
-combined_letters$location.sender <-
-  gsub("\xa7", "ß", combined_letters$location.sender) %>% # \xa7 is used instead of ß
+combined_letters$sender.location <-
+  gsub("\xa7", "ß", combined_letters$sender.location) %>% # \xa7 is used instead of ß
   gsub("\x8a", "ä", .) %>% # \x8a is used instead of ä
   gsub("\x9a", "ö", .) %>%
   gsub("\x9f", "ü", .) %>%
   gsub("'", "", .) %>%
   gsub("\x8e", "é", .)
 
-combined_letters$location.receiver <-
-  gsub("\xa7", "ß", combined_letters$location.receiver) %>% # \xa7 is used instead of ß
+combined_letters$receiver.location <-
+  gsub("\xa7", "ß", combined_letters$receiver.location) %>% # \xa7 is used instead of ß
   gsub("\x8a", "ä", .) %>% # \x8a is used instead of ä
   gsub("\x9a", "ö", .) %>%
   gsub("\x9f", "ü", .) %>%

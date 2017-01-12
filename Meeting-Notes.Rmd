@@ -1,0 +1,31 @@
+---
+title: "Meeting Notes"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Monies
+
+Needs to be invoiced before 31st March.
+
+Things desired:
+
+- Global geolines (0.5 day; free)
+- State choropleth (0.5 day, free)
+- Counties choropleth (0.5 day, free)
+- eventsObserver (1/2 day)
+- general research data management support/consultanct and advice on visualisations (2 day)
+
+4 days @ £430pd = £1720.
+
+- Credit for the future (1 day)
+
+5 days @ £430pd = £2150.
+
+# 
+
+
+

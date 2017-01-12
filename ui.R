@@ -36,6 +36,10 @@ shinyUI(navbarPage(
     fluidPage(
       sidebarLayout(
         sidebarPanel(
+          selectInput("type_of_region",
+                      "Select type of region:",
+                      choices = c("states","counties", "congressional districts")
+          ),
           selectInput(
             "choropleth_how_tally",
             "Tally which?",
