@@ -4,7 +4,7 @@
 output$journeys_checkbox_datefilter_UI <- renderUI({
   checkboxInput("journeys_checkbox_datefilter",
                 label = "Include undated letters?",
-                value = TRUE)
+                value = FALSE)
 })
 
 output$journeys_date_slider_ui <- renderUI({
@@ -116,12 +116,13 @@ output$letter_journeys_map <- renderLeaflet({
   journeys_filtered_letters <- journeys_filtered_letters()
   
   leaflet() %>%
-    addTiles() %>%
+    addProviderTiles("Esri.WorldShadedRelief") %>%
     addPolylines(
       data = letter_journey_lines(journeys_filtered_letters),
-      color = "#2c7bb6",
+      color = rgb(44, 123, 182, max = 255),
       popup = ~ label_journey(sender.location, receiver.location, number.of.letters),
-      weight = 4
+      weight = 4,
+      opacity = 0.3
     ) %>%
     addCircleMarkers(
       data = journey_termini_data(journeys_filtered_letters, send.or.receive = "sender"),

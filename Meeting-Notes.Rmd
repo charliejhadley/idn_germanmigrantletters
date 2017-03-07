@@ -28,4 +28,34 @@ Things desired:
 # 
 
 
+# 16th Jan
 
+## Choropleth of US only
+
+## Include undated letters?
+
+Make default unticked on both choroplth and journey lines
+
+## Esri.WorldShaded.Relief
+
+Use this for letter journies
+
+## Dark grey for all except selected families
+
+## Limit zooming out to one world on journey lines
+
+Think of how to do that.....
+
+## Families Tab
+
+## Remove congressional districts from choropleth
+
+## Add human readable names to the tooltips for choropleth with States and Counties
+
+## Do a doable check of the numbers
+
+
+
+
+
+Make it

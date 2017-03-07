@@ -2,34 +2,13 @@ library(shiny)
 library(leaflet)
 library(shinyjs)
 
-loadingCSS <- "
-#loading-content {
-position: absolute;
-background: #FFFFFF;
-opacity: 0.9;
-z-index: 100;
-left: 0;
-right: 0;
-height: 100%;
-text-align: center;
-color: #000000;
-}"
-
-customLegend <- "
-.leaflet .legend i{
-border-radius: 50%;
-width: 10px;
-height: 10px;
-margin-top: 4px;
-}"
-
 shinyUI(navbarPage(
   theme = "animate.min.css",
-  # tags$head(
-  #   tags$link(rel = "stylesheet", type = "text/css", href = "custom_leaflet_legend.css")
-  # ),
+  tags$head(
+    tags$link(rel = "stylesheet", type = "text/css", href = "custom_leaflet_legend.css"),
+    tags$link(rel = "stylesheet", type = "text/css", href = "loading.css")
+  ),
   # includeCSS("www/custom_leaflet_legend.css"),
-  inlineCSS(loadingCSS),
   "",
   tabPanel(
     "US Choropleth",
@@ -38,7 +17,7 @@ shinyUI(navbarPage(
         sidebarPanel(
           selectInput("type_of_region",
                       "Select type of region:",
-                      choices = c("states","counties", "congressional districts")
+                      choices = c("states","congressional districts")
           ),
           selectInput(
             "choropleth_how_tally",
@@ -68,7 +47,6 @@ shinyUI(navbarPage(
   tabPanel(
     "Letter Journeys",
     fluidPage(
-      inlineCSS(customLegend),
       useShinyjs(),
       # runcodeUI(code = "shinyjs::alert('Hello!')", width = "100%", height = "400px"),
       sidebarLayout(

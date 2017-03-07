@@ -28,11 +28,11 @@ states_shapefiles <- readOGR(
   verbose = F
 )
 
-counties_shapefiles <- readOGR(
-  dsn = "data/shapefiles/",
-  layer = "contiguous_counties",
-  verbose = F
-)
+# counties_shapefiles <- readOGR(
+#   dsn = "data/shapefiles/",
+#   layer = "contiguous_counties",
+#   verbose = F
+# )
 
 congressional_districts_shapefiles <- readOGR(
   dsn = "data/shapefiles/",
@@ -42,8 +42,12 @@ congressional_districts_shapefiles <- readOGR(
 
 proj4_string <- states_shapefiles@proj4string
 
-
-
-
-
-
+# 
+# 
+# new_cd_shapefiles <- readOGR(
+#   dsn = "data/shapefiles/",
+#   layer = "tl_2016_us_cd115",
+#   verbose = F
+# )
+# 
+# congressional_districts_shapefiles$AFFGEOID[1:5]

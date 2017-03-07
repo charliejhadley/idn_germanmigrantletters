@@ -91,13 +91,9 @@ letter_journey_lines <- function(letters.data = NA) {
     group_by(journey) %>%
     mutate(number.of.letters = n()) %>%
     ungroup() %>%
-    select(-one_of(uselesscols_letters_df)) %>%
     select(-date) %>%
     unique()
-  
-  print(tallied_letters)
-  
-  
+
   letter_journeys <- gcIntermediate(
     tallied_letters %>%
       select(sender.longitude, sender.latitude),
