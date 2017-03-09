@@ -17,7 +17,10 @@ shinyUI(navbarPage(
         sidebarPanel(
           selectInput("type_of_region",
                       "Select type of region:",
-                      choices = c("states","congressional districts")
+                      choices = c("states",
+                                  "congressional districts",
+                                  "counties"
+                                  )
           ),
           selectInput(
             "choropleth_how_tally",
@@ -26,7 +29,8 @@ shinyUI(navbarPage(
               "Send location" = "sender",
               "Receive location" = "receiver",
               "Both" = "both"
-            )
+            ),
+            selected = "both"
           ),
           uiOutput("choropleth_checkbox_datefilter_UI"),
           uiOutput("choropleth_date_slider_ui")

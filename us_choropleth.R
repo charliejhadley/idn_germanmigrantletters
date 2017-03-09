@@ -75,26 +75,21 @@ choropleth_spdf_tally <- eventReactive(
     choropleth_filtered_letters <- letters_df %>%
       filter(!is.na(sender.latitude)) # sender latitude must exist for this visualisation
     
-    print(input$choropleth_checkbox_datefilter)
     
     if(input$choropleth_checkbox_datefilter){
-      print("include undated letters")
+
       choropleth_spdf_letters <- choropleth_filtered_letters %>%
         spdf_letters(send.or.receive = input$choropleth_how_tally)
-      
-      # choropleth_filtered_letters <- choropleth_filtered_letters %>%
-      #   spdf_letters(send.or.receive = "both")
+
       
     } else {
-      print("don't include undated letters")
+
       choropleth_filtered_letters <- choropleth_filtered_letters %>%
         filter(!is.na(date)) %>%
         filter(date >= input$choropleth_date_slider[1] &
                  date <= input$choropleth_date_slider[2])
-      print(letters_df %>%
-              filter(!is.na(date)) %>%
-              filter(date >= input$choropleth_date_slider[1] &
-                       date <= input$choropleth_date_slider[2]))
+
+      
       if(nrow(choropleth_filtered_letters) != 0){
         choropleth_spdf_letters <- choropleth_filtered_letters %>%
           spdf_letters(send.or.receive = input$choropleth_how_tally)
@@ -110,7 +105,8 @@ choropleth_spdf_tally <- eventReactive(
         count_letters_in_regions(shape.files = switch(input$type_of_region,
                                                       "states" = states_shapefiles,
                                                       "counties" = counties_shapefiles,
-                                                      "congressional districts" = congressional_districts_shapefiles))
+                                                      "congressional districts" = congressional_districts_shapefiles)
+                                 )
     } else {
       NA # no letters in range
     }
@@ -200,7 +196,7 @@ output$us_states_choropleth <- renderLeaflet({
         fillOpacity = 0.8,
         fillColor = ~ palette(Count.of.Send.Locations),
         weight = 1,
-        popup = ~ region_labeller(number_of_points = Count.of.Send.Locations, state_name = NAME)
+        popup = ~ region_labeller(number_of_points = Count.of.Send.Locations, state_name = name)
         # popup = ~region_labeller(state_name = State_Name, number_of_points = var)
       ) %>%
       addLegend(

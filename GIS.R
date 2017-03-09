@@ -4,15 +4,17 @@
 spdf_letters <- function(letters.data = NA, send.or.receive = "both"){
   switch(send.or.receive,
          "both" = {
-           letters.data %>%
-           {
-             a <- select(., sender.latitude, sender.longitude) %>%
-               rename(latitude = sender.latitude, longitude = sender.longitude)
-             b <- select(., receiver.latitude, receiver.longitude) %>%
-               rename(latitude = receiver.latitude, longitude = receiver.longitude)
-             rbind(a,b)
-           } %>%
-             select(longitude, latitude) %>% # SPDF are longitude, latitude pairs
+
+           send_letters <- letters.data %>%
+             select_("sender.latitude", "sender.longitude") %>%
+             rename_("latitude" = "sender.latitude", "longitude" = "sender.longitude")
+           
+           receive_letters <- letters.data %>%
+             select_("receiver.latitude", "receiver.longitude") %>%
+             rename_("latitude" = "receiver.latitude", "longitude" = "receiver.longitude")
+
+           letters_data <- rbind(send_letters,receive_letters) %>%
+             select_("longitude", "latitude") %>% # SPDF are longitude, latitude pairs
              na.omit() %>%
              SpatialPointsDataFrame(
                coords = .,
@@ -21,18 +23,29 @@ spdf_letters <- function(letters.data = NA, send.or.receive = "both"){
              )
          },
          "sender" = {
-           letters.data %>%
-             select(sender.longitude, sender.latitude) %>% # SPDF are longitude, latitude pairs
+           
+           send_letters <- letters.data %>%
+             select_("sender.latitude", "sender.longitude") %>%
+             rename_("latitude" = "sender.latitude", "longitude" = "sender.longitude")
+           
+           send_letters %>%
+             select_("longitude", "latitude") %>% # SPDF are longitude, latitude pairs
              na.omit() %>%
              SpatialPointsDataFrame(
                coords = .,
                data = .,
                proj4string = proj4_string
              )
+           
          },
          "receiver" = {
-           letters.data %>%
-             select(receiver.longitude, receiver.latitude) %>%  # SPDF are longitude, latitude pairs
+           
+           receive_letters <- letters.data %>%
+             select_("receiver.latitude", "receiver.longitude") %>%
+             rename_("latitude" = "receiver.latitude", "longitude" = "receiver.longitude")
+           
+           receive_letters %>%
+             select_("longitude", "latitude") %>% # SPDF are longitude, latitude pairs
              na.omit() %>%
              SpatialPointsDataFrame(
                coords = .,
@@ -66,9 +79,10 @@ count_letters_in_regions <- function(letters.spdf, shape.files){
   
   contiguous_counts <-
     poly.counts(pts = letters.spdf, polys = shapefiles)
-  contiguous_counts
+
   
   contiguous_counts_df <- data.frame(contiguous_counts)
+
   shapefiles@data$Count.of.Send.Locations <-
     contiguous_counts_df$contiguous_counts
   # Return for use
@@ -87,18 +101,19 @@ state_outline_only <- {
 
 letter_journey_lines <- function(letters.data = NA) {
   ## Tally letters for polylines
+  
   tallied_letters <- letters.data %>%
     group_by(journey) %>%
     mutate(number.of.letters = n()) %>%
     ungroup() %>%
-    select(-date) %>%
+    select_("-date") %>%
     unique()
-
+  print("pass")
   letter_journeys <- gcIntermediate(
     tallied_letters %>%
-      select(sender.longitude, sender.latitude),
+      select_("sender.longitude", "sender.latitude"),
     tallied_letters %>%
-      select(receiver.longitude, receiver.latitude),
+      select_("receiver.longitude", "receiver.latitude"),
     sp = TRUE,
     addStartEnd = TRUE
   )

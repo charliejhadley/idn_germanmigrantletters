@@ -27,27 +27,43 @@ states_shapefiles <- readOGR(
   layer = "contiguous_states",
   verbose = F
 )
+proj4_string <- states_shapefiles@proj4string
 
-# counties_shapefiles <- readOGR(
+colnames(states_shapefiles@data) <- tolower(colnames(states_shapefiles@data))
+
+counties_shapefiles <- readOGR(
+  "data/composite_us_counties.geojson",
+  verbose = F
+)
+# 
+# congressional_districts_shapefiles <- readOGR(
 #   dsn = "data/shapefiles/",
-#   layer = "contiguous_counties",
+#   layer = "contiguous_congressional_districts",
 #   verbose = F
 # )
 
 congressional_districts_shapefiles <- readOGR(
   dsn = "data/shapefiles/",
-  layer = "contiguous_congressional_districts",
+  layer = "tl_2016_us_cd115",
   verbose = F
 )
+## Remove congressional districts at large
+congressional_districts_shapefiles <- congressional_districts_shapefiles[!congressional_districts_shapefiles$CD115FP == "00",]
+colnames(congressional_districts_shapefiles@data) <- tolower(colnames(congressional_districts_shapefiles@data))
 
-proj4_string <- states_shapefiles@proj4string
+colnames(congressional_districts_shapefiles@data) <- plyr::mapvalues(colnames(congressional_districts_shapefiles@data), from = "namelsad", to = "name")
 
+congressional_districts_shapefiles <- contiguous_congressional_districts_spdf
+
+
+### ========== alberusa
 # 
+# library(albersusa)
+# system.file("extdata/composite_us_states.geojson.gz", package="albersusa")
 # 
-# new_cd_shapefiles <- readOGR(
-#   dsn = "data/shapefiles/",
-#   layer = "tl_2016_us_cd115",
-#   verbose = F
-# )
+# foo_geojson <- rgdal::readOGR("data/composite_us_counties.geojson")
 # 
-# congressional_districts_shapefiles$AFFGEOID[1:5]
+# foo_geojson$name
+
+
+

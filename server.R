@@ -1,11 +1,11 @@
- library(shiny)
-library(leaflet)
-library(readr)
 library(rgdal)
 library(GISTools)
+library(shiny)
+library(leaflet)
+library(tidyverse)
 library(sp)
-library(readr)
-library(dplyr)
+library(statesRcontiguous)
+
 library(geosphere) # for great circles
 library(shinyjs)
 

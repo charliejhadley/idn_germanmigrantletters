@@ -27,14 +27,6 @@ output$journeys_date_slider_ui <- renderUI({
     )
   )
   
-  # dateRangeInput(
-  #   'journeys_date_slider',
-  #   label = 'Date range input: yyyy-mm-dd',
-  #   start = min(letters_df$date, na.rm = T),
-  #   end = max(letters_df$date, na.rm = T)
-  # )
-  # 
-  
 })
 
 
@@ -57,10 +49,18 @@ journeys_filtered_letters <- eventReactive(c(
   if (input$journeys_checkbox_datefilter) {
     journeys_filtered_letters
   } else {
-    journeys_filtered_letters %>%
-      filter(!is.na(date)) %>%
-      filter(date >= input$journeys_date_slider[1] &
-               date <= input$journeys_date_slider[2])
+    journeys_filtered_letters <- journeys_filtered_letters %>%
+      filter_("!is.na(date)")
+    
+    print("hree")
+    min_date <- input$journeys_date_slider[1] 
+    max_date <- input$journeys_date_slider[2] 
+    
+    journeys_filtered_letters <- journeys_filtered_letters %>%
+      filter(date >= min_date &
+               date <= max_date)
+    print(journeys_filtered_letters)
+    journeys_filtered_letters
   }
   
 },
