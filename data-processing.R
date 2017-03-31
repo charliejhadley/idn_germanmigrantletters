@@ -65,5 +65,12 @@ congressional_districts_shapefiles <- contiguous_congressional_districts_spdf
 # 
 # foo_geojson$name
 
+## ==== Family
+
+interesting_family_letter_series <- gsub(".txt", "",list.files(path = "data-raw/target-family/"))
+
+interesting_family_letters <- letters_df %>%
+  filter(id.letter %in% gsub(".txt", "",list.files(path = "data-raw/target-family/")))
+
 
 

@@ -108,7 +108,7 @@ letter_journey_lines <- function(letters.data = NA) {
     ungroup() %>%
     select_("-date") %>%
     unique()
-  print("pass")
+  
   letter_journeys <- gcIntermediate(
     tallied_letters %>%
       select_("sender.longitude", "sender.latitude"),
@@ -125,26 +125,33 @@ letter_journey_lines <- function(letters.data = NA) {
   letter_journeys
 }
 
-journey_termini_data <- function(letters.data = NA, send.or.receive = NA){
-  switch(send.or.receive,
-         "sender" = {
-           letters.data %>%
-             select(-contains("receiver")) %>% # remove receiver cols
-             select(-one_of(uselesscols_letters_df), -date) %>% # remove unique cols
-             distinct() %>%
-             group_by(sender.location) %>%
-             mutate(total.sent = n()) %>%
-             ungroup()
-         },
-         "receiver" = {
-           letters.data %>%
-             select(-contains("sender")) %>% # remove receiver cols
-             select(-one_of(uselesscols_letters_df), -date) %>% # remove unique cols
-             distinct() %>%
-             group_by(receiver.location) %>%
-             mutate(total.received = n()) %>%
-             ungroup()
-         })
+journey_termini_data <- function(letters.data) {
+  
+  receive_points <- letters.data %>%
+    group_by(receiver.location) %>%
+    mutate(total.received = n()) %>%
+    ungroup() %>%
+    select(contains("receiv")) %>%
+    unique() %>%
+    rename(location.name = receiver.location,
+           latitude = receiver.latitude,
+           longitude = receiver.longitude,
+           country = receiver.country
+    )
+  
+  send_points <- letters.data %>%
+    group_by(sender.location) %>%
+    mutate(total.sent = n()) %>%
+    ungroup() %>%
+    select(contains("sen")) %>%
+    unique() %>%
+    rename(location.name = sender.location,
+           latitude = sender.latitude,
+           longitude = sender.longitude,
+           country = sender.country
+    )
+  
+  full_join(receive_points, send_points)
 }
 
 label_journey <- function(sender.location = NA, receiver.location = NA, number.of.letters = NA){
@@ -158,21 +165,77 @@ label_journey <- function(sender.location = NA, receiver.location = NA, number.o
   )
 }
 
-label_termini_sender <- function(sender.location, total.sent){
-  paste0(
-    "<p>Send Location: ", sender.location,
-    "</p>",
-    "<p>Number of letters sent: ", total.sent,
-    "</p>"
+send_only_markers <- function(map, termini.data){
+  
+  send.only.locs <- journey_termini_data(termini.data) %>%
+    filter(total.sent > 0 & is.na(total.received))
+  
+  addCircleMarkers(
+    map,
+    data = send.only.locs,
+    lng = ~ longitude,
+    lat = ~ latitude,
+    fill = TRUE,
+    radius = 1.8,
+    stroke = TRUE,
+    color = "#fdae61",
+    popup = ~ paste0(
+      "<p>Send Location: ", location.name,
+      "</p>",
+      "<p>Number of letters sent: ", total.sent,
+      "</p>"
+    ),
+    opacity = 0.6
   )
 }
 
-label_termini_receiver <- function(receiver.location, total.received){
-  paste0(
-    "<p>Send Location: ", receiver.location,
-    "</p>",
-    "<p>Number of letters received: ", total.received,
-    "</p>"
+receive_only_markers <- function(map, termini.data){
+  
+  receive.only.locs <- journey_termini_data(termini.data) %>%
+    filter(total.received > 0 & is.na(total.sent))
+  
+  addCircleMarkers(
+    map,
+    data = receive.only.locs,
+    lng = ~ longitude,
+    lat = ~ latitude,
+    fill = TRUE,
+    radius = 1.8,
+    stroke = TRUE,
+    color = "#d7191c",
+    popup = ~ paste0(
+      "<p>Receive Location: ", location.name,
+      "</p>",
+      "<p>Number of letters received: ", total.received,
+      "</p>"
+    ),
+    opacity = 0.6
+  )
+}
+
+two_way_markers <- function(map, termini.data){
+  
+  receive.only.locs <- journey_termini_data(termini.data) %>%
+    filter(total.sent > 0 & total.received > 0)
+  
+  addCircleMarkers(
+    map,
+    data = receive.only.locs,
+    lng = ~ longitude,
+    lat = ~ latitude,
+    fill = TRUE,
+    radius = 1.8,
+    stroke = TRUE,
+    color = "#7570b3",
+    popup = ~ paste0(
+      "<p>Two-way Location: ", location.name,
+      "</p>",
+      "<p>Number of letters received: ", total.received,
+      "</p>",
+      "<p>Number of letters send: ", total.sent,
+      "</p>"
+    ),
+    opacity = 0.8
   )
 }
 

@@ -160,9 +160,7 @@ output$us_states_choropleth <- renderLeaflet({
   palette <- colorBin(
     c("#cccccc", brewer.pal(5, "YlGnBu")),
     bins = c(0, 1, 5, 10, 20, 50, 350),
-    pretty = FALSE,
-    # na.color = "#cccccc",
-    alpha = TRUE
+    pretty = FALSE
   )
   
   region_labeller <- function(number_of_points = NA, state_name) {
@@ -174,6 +172,8 @@ output$us_states_choropleth <- renderLeaflet({
   
   bounds <- c(-125, 24 ,-75, 45) # http://rpubs.com/bhaskarvk/proj4leaflet
   
+  print("palette(Count.of.Send.Locations)")
+  print(palette(choropleth_spdf_tally()$Count.of.Send.Locations))
   
   if(class(choropleth_spdf_tally) == "SpatialPolygonsDataFrame"){
     choropleth_spdf_tally() %>%

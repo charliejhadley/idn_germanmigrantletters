@@ -52,46 +52,18 @@ journeys_filtered_letters <- eventReactive(c(
     journeys_filtered_letters <- journeys_filtered_letters %>%
       filter_("!is.na(date)")
     
-    print("hree")
     min_date <- input$journeys_date_slider[1] 
     max_date <- input$journeys_date_slider[2] 
     
     journeys_filtered_letters <- journeys_filtered_letters %>%
       filter(date >= min_date &
                date <= max_date)
-    print(journeys_filtered_letters)
+    
     journeys_filtered_letters
   }
   
 },
 ignoreNULL = FALSE)
-
-## ======================== custom legend
-## ================================================
-## from http://stackoverflow.com/a/37482936/1659890
-
-addLegendCustom <-
-  function(map, colors, labels, sizes, opacity = 0.5) {
-    colorAdditions <-
-      paste0(colors, "; width:", sizes, "px; height:", sizes, "px")
-    labelAdditions <-
-      paste0(
-        "<div style='display: inline-block;height: ",
-        sizes,
-        "px;margin-top: 4px;line-height: ",
-        sizes,
-        "px;'>",
-        labels,
-        "</div>"
-      )
-    
-    return(addLegend(
-      map,
-      colors = colorAdditions,
-      labels = labelAdditions,
-      opacity = opacity
-    ))
-  }
 
 ## ======================== letter_journeys_map
 ## ================================================
@@ -124,36 +96,17 @@ output$letter_journeys_map <- renderLeaflet({
       weight = 4,
       opacity = 0.3
     ) %>%
-    addCircleMarkers(
-      data = journey_termini_data(journeys_filtered_letters, send.or.receive = "sender"),
-      lng = ~ sender.longitude,
-      lat = ~ sender.latitude,
-      fill = FALSE,
-      radius = 1.8,
-      stroke = TRUE,
-      color = "#fdae61",
-      popup = ~ label_termini_sender(sender.location, total.sent),
-      opacity = 0.6
-    ) %>%
-    addCircleMarkers(
-      data = journey_termini_data(journeys_filtered_letters, send.or.receive = "receiver"),
-      lng = ~ receiver.longitude,
-      lat = ~ receiver.latitude,
-      fill = TRUE,
-      radius = 1.8,
-      stroke = TRUE,
-      color = "#d7191c",
-      popup = ~ label_termini_receiver(receiver.location, total.received),
-      opacity = 0.6
-    ) %>% {
+    send_only_markers(journeys_filtered_letters) %>%
+    receive_only_markers(journeys_filtered_letters) %>%
+    two_way_markers(journeys_filtered_letters) %>% {
       shinyjs::hide(id = "loading-journeys",
                     anim = TRUE,
                     animType = "fade")
       addLegendCustom(
         .,
-        colors = c("#fdae61", "#d7191c"),
-        labels = c("Sender", "Receiver"),
-        sizes = c(10, 10)
+        colors = c("#fdae61", "#d7191c", "#7570b3"),
+        labels = c("Sender", "Receiver", "Sender and Receiver"),
+        sizes = c(10, 10, 10)
       )
     }
   
