@@ -19,14 +19,14 @@ shinyUI(
         ),
         sidebarLayout(
           sidebarPanel(
-            selectInput(
-              "type_of_region",
-              "Select type of region:",
-              selected = "counties",
-              choices = c("states",
-                          "congressional districts",
-                          "counties")
-            ),
+            radioButtons("choropleth_boundaries_to_show",
+                         label = "Boundaries to show",
+                         choices = list(
+                           "States only" = "states",
+                           "States and Counties" = "counties",
+                           "States and Congressional Districts" = "congressional districts"),
+                         selected = "counties"
+                         ),
             selectInput(
               "choropleth_how_tally",
               "Tally which?",

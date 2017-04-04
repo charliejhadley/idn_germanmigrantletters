@@ -9,19 +9,18 @@ output$choropleth_checkbox_datefilter_UI <- renderUI({
 
 observeEvent(input$choropleth_checkbox_datefilter,
              {
-               if(is.null(input$choropleth_checkbox_datefilter)){
+               if (is.null(input$choropleth_checkbox_datefilter)) {
                  return()
                }
                
-               enable_date_slider <- !input$choropleth_checkbox_datefilter
+               enable_date_slider <-
+                 !input$choropleth_checkbox_datefilter
                print('enable_date_slider')
                print(enable_date_slider)
-    toggleState(id = "choropleth_date_slider", condition = enable_date_slider)
-               }
-  )
+               toggleState(id = "choropleth_date_slider", condition = enable_date_slider)
+             })
 
 output$choropleth_date_slider_ui <- renderUI({
-
   sliderInput(
     "choropleth_date_slider",
     "Date Range",
@@ -40,10 +39,10 @@ output$choropleth_date_slider_ui <- renderUI({
 # choropleth_spdf_tally <- eventReactive(
 #   c(input$choropleth_how_tally, input$choropleth_date_slider, input$choropleth_checkbox_datefilter, input$type_of_region),
 # {
-# 
+#
 #   choropleth_filtered_letters <- letters_df %>%
 #     filter(!is.na(sender.latitude)) # sender latitude must exist for this visualisation
-#   
+#
 #   if(input$choropleth_checkbox_datefilter){
 #     choropleth_filtered_letters <- choropleth_filtered_letters %>%
 #       spdf_letters(send.or.receive = input$choropleth_how_tally) %>%
@@ -56,7 +55,7 @@ output$choropleth_date_slider_ui <- renderUI({
 #       filter(!is.na(date)) %>%
 #       filter(date >= input$choropleth_date_slider[1] &
 #                date <= input$choropleth_date_slider[2])
-#     
+#
 #     if(nrow(choropleth_filtered_letters) != 0){
 #       choropleth_filtered_letters %>%
 #       spdf_letters(send.or.receive = input$choropleth_how_tally) %>%
@@ -67,35 +66,37 @@ output$choropleth_date_slider_ui <- renderUI({
 #     } else {
 #       NA # no letters
 #     }
-#       
+#
 #   }
-#   
+#
 # },
 # ignoreNULL = FALSE)
 
 choropleth_spdf_tally <- eventReactive(
-  c(input$choropleth_how_tally, input$choropleth_date_slider, input$choropleth_checkbox_datefilter, input$type_of_region),
+  c(
+    input$choropleth_how_tally,
+    input$choropleth_date_slider,
+    input$choropleth_checkbox_datefilter,
+    input$choropleth_boundaries_to_show
+  ),
   {
-    
     choropleth_filtered_letters <- letters_df %>%
       filter(!is.na(sender.latitude)) # sender latitude must exist for this visualisation
     
     
-    if(input$choropleth_checkbox_datefilter){
-
+    if (input$choropleth_checkbox_datefilter) {
       choropleth_spdf_letters <- choropleth_filtered_letters %>%
         spdf_letters(send.or.receive = input$choropleth_how_tally)
-
+      
       
     } else {
-
       choropleth_filtered_letters <- choropleth_filtered_letters %>%
         filter(!is.na(date)) %>%
         filter(date >= input$choropleth_date_slider[1] &
                  date <= input$choropleth_date_slider[2])
-
       
-      if(nrow(choropleth_filtered_letters) != 0){
+      
+      if (nrow(choropleth_filtered_letters) != 0) {
         choropleth_spdf_letters <- choropleth_filtered_letters %>%
           spdf_letters(send.or.receive = input$choropleth_how_tally)
       } else {
@@ -103,30 +104,33 @@ choropleth_spdf_tally <- eventReactive(
       }
     }
     
+    print("choropleth_boundaries_to_show")
+    print(input$choropleth_boundaries_to_show)
     
-    if(class(choropleth_spdf_letters) == "SpatialPointsDataFrame"){
-      
+    if (class(choropleth_spdf_letters) == "SpatialPointsDataFrame") {
       choropleth_spdf_letters %>%
-        count_letters_in_regions(shape.files = switch(input$type_of_region,
-                                                      "states" = states_shapefiles,
-                                                      "counties" = counties_shapefiles,
-                                                      "congressional districts" = congressional_districts_shapefiles)
-                                 )
+        count_letters_in_regions(shape.files = switch(
+          input$choropleth_boundaries_to_show,
+          "states" = states_shapefiles,
+          "counties" = counties_shapefiles,
+          "congressional districts" = congressional_districts_shapefiles
+        ))
     } else {
       NA # no letters in range
     }
     
     
   },
-  ignoreNULL = FALSE)
+  ignoreNULL = FALSE
+)
 
 
 # choropleth_spdf_tally <- eventReactive(
 #   c(input$type_of_region),
 #   {
-#     
+#
 #     if(class(choropleth_spdf_letters()) == "SpatialPointsDataFrame"){
-#       
+#
 #       choropleth_spdf_letters() %>%
 #         count_letters_in_regions(shape.files = switch(input$type_of_region,
 #                                                       "states" = states_shapefiles,
@@ -144,22 +148,26 @@ choropleth_spdf_tally <- eventReactive(
 ## ======================== us_states_choropleth
 ## ================================================
 
+
 output$us_states_choropleth <- renderLeaflet({
-  
-  if(is.null(input$choropleth_checkbox_datefilter)){
+  if (is.null(input$choropleth_checkbox_datefilter)) {
     return()
   }
   
-  if(!input$choropleth_checkbox_datefilter){
-    if(is.null(input$choropleth_date_slider)){
+  if (!input$choropleth_checkbox_datefilter) {
+    if (is.null(input$choropleth_date_slider)) {
       return()
     }
   }
-
-  if(is.null(choropleth_spdf_tally())){
-    shinyjs::show(id = "loading-choropleth", anim = TRUE, animType = "fade")
+  
+  if (is.null(choropleth_spdf_tally())) {
+    shinyjs::show(id = "loading-choropleth",
+                  anim = TRUE,
+                  animType = "fade")
   } else {
-    shinyjs::hide(id = "loading-choropleth", anim = TRUE, animType = "fade")
+    shinyjs::hide(id = "loading-choropleth",
+                  anim = TRUE,
+                  animType = "fade")
   }
   
   palette <- colorBin(
@@ -169,31 +177,23 @@ output$us_states_choropleth <- renderLeaflet({
   )
   
   region_labeller <- function(number_of_points = NA, state_name) {
-    paste0("<p>", state_name, "</p>",
-      "<p>Number of letters: ", number_of_points, "</p>")
+    paste0("<p>",
+           state_name,
+           "</p>",
+           "<p>Number of letters: ",
+           number_of_points,
+           "</p>")
   }
   
   choropleth_spdf_tally <- choropleth_spdf_tally()
   
-  bounds <- c(-125, 24 ,-75, 45) # http://rpubs.com/bhaskarvk/proj4leaflet
+  bounds <-
+    c(-125, 24 , -75, 45) # http://rpubs.com/bhaskarvk/proj4leaflet
   
-  print("palette(Count.of.Send.Locations)")
-  print(palette(choropleth_spdf_tally()$Count.of.Send.Locations))
-  
-  if(class(choropleth_spdf_tally) == "SpatialPolygonsDataFrame"){
-    choropleth_spdf_tally() %>%
-      # leaflet(options = leafletOptions(
-      #   ## Necessary for noce bounding box http://rpubs.com/bhaskarvk/proj4leaflet
-      #   crs=leafletCRS(
-      #     crsClass="L.Proj.CRS",
-      #     code='EPSG:2163',
-      #     proj4def='+proj=laea +lat_0=45 +lon_0=-100 +x_0=0 +y_0=0 +a=6370997 +b=6370997 +units=m +no_defs',
-      #     resolutions = c(65536, 32768, 16384, 8192, 4096, 2048,1024, 512, 256, 128)
-      #   )
-      # )) %>%
+  if (class(choropleth_spdf_tally) == "SpatialPolygonsDataFrame") {
+    
+    base_map <- choropleth_spdf_tally() %>%
       leaflet() %>%
-      # addTiles() %>%
-      # addTiles(urlTemplate = NULL, options = providerTileOptions(minZoom = 8, maxZoom = 10)) %>%
       addPolygons(
         stroke = TRUE,
         color = "#ffffff",
@@ -214,8 +214,33 @@ output$us_states_choropleth <- renderLeaflet({
         ##transparency again
         title = "Total letters"
       )
-      # fitBounds(bounds[1], bounds[2], bounds[3], bounds[4]) %>%
-      # setMaxBounds(bounds[1], bounds[2], bounds[3], bounds[4])
+    
+    
+    switch(
+      input$choropleth_boundaries_to_show,
+      "states" = {
+        base_map
+      },
+      "counties" = {
+        base_map %>%
+          addPolygons(
+            data = state_outline_only,
+            color = "#000000",
+            weight = 1,
+            fill = FALSE
+          )
+      },
+      "congressional districts" = {
+        base_map %>%
+          addPolygons(
+            data = state_outline_only,
+            color = "#000000",
+            weight = 1,
+            fill = FALSE
+          )
+      }
+    )
+    
   } else {
     leaflet(state_outline_only) %>%
       addTiles() %>%
@@ -233,8 +258,11 @@ output$us_states_choropleth <- renderLeaflet({
         opacity = 0.6,
         title = "relative<br>amount"
       )
-      # fitBounds(bounds[1], bounds[2], bounds[3], bounds[4]) %>%
-      # setMaxBounds(bounds[1], bounds[2], bounds[3], bounds[4])
+    # fitBounds(bounds[1], bounds[2], bounds[3], bounds[4]) %>%
+    # setMaxBounds(bounds[1], bounds[2], bounds[3], bounds[4])
   }
   
-  })
+  
+})
+
+
