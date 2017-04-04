@@ -12,6 +12,7 @@ shinyUI(
     tabPanel(
       "US Choropleth",
       fluidPage(
+        useShinyjs(),
         shiny::tags$head(
           shiny::tags$link(rel = "stylesheet", type = "text/css", href = "custom_leaflet_legend.css"),
           shiny::tags$link(rel = "stylesheet", type = "text/css", href = "loading.css")
@@ -21,6 +22,7 @@ shinyUI(
             selectInput(
               "type_of_region",
               "Select type of region:",
+              selected = "counties",
               choices = c("states",
                           "congressional districts",
                           "counties")
@@ -51,7 +53,6 @@ shinyUI(
     ),
     tabPanel("Letter Journeys",
              fluidPage(
-               useShinyjs(),
                # runcodeUI(code = "shinyjs::alert('Hello!')", width = "100%", height = "400px"),
                sidebarLayout(
                  sidebarPanel(

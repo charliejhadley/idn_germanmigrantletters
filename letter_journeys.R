@@ -7,15 +7,22 @@ output$journeys_checkbox_datefilter_UI <- renderUI({
                 value = FALSE)
 })
 
+
+observeEvent(input$journeys_checkbox_datefilter,
+             {
+               if(is.null(input$journeys_checkbox_datefilter)){
+                 return()
+               }
+               
+               enable_date_slider <- !input$journeys_checkbox_datefilter
+               print('enable_date_slider')
+               print(enable_date_slider)
+               toggleState(id = "journeys_date_slider", condition = enable_date_slider)
+             }
+)
+
 output$journeys_date_slider_ui <- renderUI({
-  if (is.null(input$journeys_checkbox_datefilter)) {
-    return()
-  }
-  
-  if (input$journeys_checkbox_datefilter) {
-    return()
-  }
-  
+
   sliderInput(
     "journeys_date_slider",
     "Date Range",

@@ -7,16 +7,21 @@ output$choropleth_checkbox_datefilter_UI <- renderUI({
                 value = TRUE)
 })
 
+observeEvent(input$choropleth_checkbox_datefilter,
+             {
+               if(is.null(input$choropleth_checkbox_datefilter)){
+                 return()
+               }
+               
+               enable_date_slider <- !input$choropleth_checkbox_datefilter
+               print('enable_date_slider')
+               print(enable_date_slider)
+    toggleState(id = "choropleth_date_slider", condition = enable_date_slider)
+               }
+  )
 
 output$choropleth_date_slider_ui <- renderUI({
-  if (is.null(input$choropleth_checkbox_datefilter)) {
-    return()
-  }
-  
-  if (input$choropleth_checkbox_datefilter) {
-    return()
-  }
-  
+
   sliderInput(
     "choropleth_date_slider",
     "Date Range",
@@ -207,7 +212,7 @@ output$us_states_choropleth <- renderLeaflet({
         ## legend labels (only min and max)
         opacity = 0.6,
         ##transparency again
-        title = "relative<br>amount"
+        title = "Total letters"
       )
       # fitBounds(bounds[1], bounds[2], bounds[3], bounds[4]) %>%
       # setMaxBounds(bounds[1], bounds[2], bounds[3], bounds[4])

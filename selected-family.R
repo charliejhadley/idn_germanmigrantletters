@@ -13,14 +13,20 @@ output$selected_family_checkbox_datefilter_UI <- renderUI({
                 value = FALSE)
 })
 
+observeEvent(input$selected_family_checkbox_datefilter,
+             {
+               if(is.null(input$selected_family_checkbox_datefilter)){
+                 return()
+               }
+               
+               enable_date_slider <- !input$selected_family_checkbox_datefilter
+               print('enable_date_slider')
+               print(enable_date_slider)
+               toggleState(id = "selected_family_date_slider", condition = enable_date_slider)
+             }
+)
+
 output$selected_family_date_slider_ui <- renderUI({
-  if (is.null(input$selected_family_checkbox_datefilter)) {
-    return()
-  }
-  
-  if (input$selected_family_checkbox_datefilter) {
-    return()
-  }
   
   sliderInput(
     "selected_family_date_slider",
