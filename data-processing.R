@@ -1,4 +1,7 @@
-locations_df <- read_csv("data/all_locations.csv")
+locations_df <- read_csv("data/all_locations.csv") %>%
+  unique() %>%
+  mutate(location.id = row_number() - 1)
+
 
 letters_df <- read_csv("data/all_letters.csv")
 
