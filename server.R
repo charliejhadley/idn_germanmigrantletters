@@ -5,10 +5,13 @@ library(leaflet)
 library(tidyverse)
 library(sp)
 library(statesRcontiguous)
-
-
+library(lubridate)
 library(geosphere) # for great circles
 library(shinyjs)
+library("stringr")
+library("rlang")
+library("sf")
+library("forcats")
 
 source(file = "data-processing.R", local = TRUE)
 
