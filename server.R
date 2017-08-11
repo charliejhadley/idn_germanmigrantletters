@@ -59,5 +59,6 @@ shinyServer(
     
     source("selected-family.R", local = TRUE)$value
     
+    source("tab_ggplot2-selected-family.R", local = TRUE)$value
   }
 )
