@@ -93,12 +93,21 @@ congressional_districts_shapefiles <- shp_all_us_congressional_districts %>%
 # 
 # foo_geojson$name
 
-## ==== Family
+## ============== Selected families
 
-interesting_family_letter_series <- gsub(".txt", "",list.files(path = "data-raw/target-family/"))
+selected_family_letter_series <- c("S001", "G004", "B117")
 
-interesting_family_letters <- letters_df %>%
-  filter(id.letter %in% gsub(".txt", "",list.files(path = "data-raw/target-family/")))
+letters_df <-letters_df %>%
+  mutate(selected.family = ifelse(grepl(paste0(selected_family_letter_series, collapse = "|"), id.letter),
+         TRUE,FALSE))
 
+selected_families_letters <- letters_df %>%
+  filter(selected.family)
+
+unique_selected_letter_locations <- selected_families_letters %>%
+  select(sender.longitude, sender.latitude) %>%
+  unique() %>%
+  mutate(ggplot.necessity = "Send Location") %>%
+  st_as_sf(coords = c("sender.longitude", "sender.latitude"), crs = st_crs(states_shapefiles))
 
 
