@@ -68,38 +68,20 @@ letters_df <- letters_df %>%
 
 
 ## ============== Shapefiles 
-states_shapefiles <- readOGR(
-  dsn = "data/shapefiles/",
-  layer = "contiguous_states",
-  verbose = F
-)
-proj4_string <- states_shapefiles@proj4string
 
-colnames(states_shapefiles@data) <- tolower(colnames(states_shapefiles@data))
+# load("data/states_shapefiles.rdata")
+# proj4_string <- states_shapefiles@proj4string
+# load("data/counties_shapefiles.rdata")
+# load("data/congressional_districts_shapefiles.rdata")
 
-counties_shapefiles <- readOGR(
-  "data/composite_us_counties.geojson",
-  verbose = F
-)
-# 
-# congressional_districts_shapefiles <- readOGR(
-#   dsn = "data/shapefiles/",
-#   layer = "contiguous_congressional_districts",
-#   verbose = F
-# )
+states_shapefiles <- shp_all_us_states %>%
+  filter(contiguous.united.states)
+counties_shapefiles <- shp_all_us_counties %>%
+  filter(contiguous.united.states)
+congressional_districts_shapefiles <- shp_all_us_congressional_districts %>%
+  filter(contiguous.united.states)
 
-congressional_districts_shapefiles <- readOGR(
-  dsn = "data/shapefiles/",
-  layer = "tl_2016_us_cd115",
-  verbose = F
-)
-## Remove congressional districts at large
-congressional_districts_shapefiles <- congressional_districts_shapefiles[!congressional_districts_shapefiles$CD115FP == "00",]
-colnames(congressional_districts_shapefiles@data) <- tolower(colnames(congressional_districts_shapefiles@data))
 
-colnames(congressional_districts_shapefiles@data) <- plyr::mapvalues(colnames(congressional_districts_shapefiles@data), from = "namelsad", to = "name")
-
-congressional_districts_shapefiles <- contiguous_congressional_districts_spdf
 
 
 ### ========== alberusa
