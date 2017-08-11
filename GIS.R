@@ -1,89 +1,56 @@
+## ============== count_letters_in_shp
 
-
-## ============== Convert df to SPDF
-
-spdf_letters <-
-  function(letters.data = NA,
-           send.or.receive = "both") {
-    switch(
-      send.or.receive,
-      "both" = {
-        send_letters <- letters.data %>%
-          select_("sender.latitude", "sender.longitude") %>%
-          rename_("latitude" = "sender.latitude", "longitude" = "sender.longitude")
-        
-        receive_letters <- letters.data %>%
-          select_("receiver.latitude", "receiver.longitude") %>%
-          rename_("latitude" = "receiver.latitude", "longitude" = "receiver.longitude")
-        
-        letters_data <- rbind(send_letters, receive_letters) %>%
-          select_("longitude", "latitude") %>% # SPDF are longitude, latitude pairs
-          na.omit() %>%
-          SpatialPointsDataFrame(coords = .,
-                                 data = .,
-                                 proj4string = proj4_string)
-      },
-      "sender" = {
-        send_letters <- letters.data %>%
-          select_("sender.latitude", "sender.longitude") %>%
-          rename_("latitude" = "sender.latitude", "longitude" = "sender.longitude")
-        
-        send_letters %>%
-          select_("longitude", "latitude") %>% # SPDF are longitude, latitude pairs
-          na.omit() %>%
-          SpatialPointsDataFrame(coords = .,
-                                 data = .,
-                                 proj4string = proj4_string)
-        
-      },
-      "receiver" = {
-        receive_letters <- letters.data %>%
-          select_("receiver.latitude", "receiver.longitude") %>%
-          rename_("latitude" = "receiver.latitude", "longitude" = "receiver.longitude")
-        
-        receive_letters %>%
-          select_("longitude", "latitude") %>% # SPDF are longitude, latitude pairs
-          na.omit() %>%
-          SpatialPointsDataFrame(coords = .,
-                                 data = .,
-                                 proj4string = proj4_string)
-      }
-    )
+count_letters_in_shp <- function(letters.data = NA, shp) {
+  
+  if(nrow(letters.data) == 0){
+    shp %>%
+      mutate(
+        total.count = 0,
+        received.count = 0,
+        send.count = 0
+      )
+  } else {
+    send_letters <- letters.data %>%
+      select(sender.latitude, sender.longitude) %>%
+      rename(latitude = sender.latitude, longitude = sender.longitude) %>%
+      na.omit()
+    
+    receive_letters <- letters.data %>%
+      select(receiver.latitude, receiver.longitude) %>%
+      rename(latitude = receiver.latitude, longitude = receiver.longitude) %>%
+      na.omit()
+    
+    total_letters <- send_letters %>%
+      bind_rows(receive_letters) %>%
+      # unique() %>%
+      st_as_sf(coords = c("longitude", "latitude"),
+               crs = st_crs(shp))
+    
+    sent_letters <- send_letters %>%
+      # unique() %>%
+      st_as_sf(coords = c("longitude", "latitude"),
+               crs = st_crs(shp))
+    
+    received_letters <- receive_letters %>%
+      # unique() %>%
+      st_as_sf(coords = c("longitude", "latitude"),
+               crs = st_crs(shp))
+    
+    the_total.count <- lengths(st_covers(shp, total_letters))
+    the_received.count <- lengths(st_covers(shp, received_letters))
+    the_send.count <- lengths(st_covers(shp, sent_letters))
+    
+    
+    shp %>%
+      mutate(
+        total.count = the_total.count,
+        received.count = the_received.count,
+        send.count = the_send.count
+      )
+    
   }
-
-
-
-## ============== Count letters per state
-
-count_letters_in_states <- function(letters.spdf = NA) {
-  shapefiles <- states_shapefiles
-  
-  contiguous_counts <-
-    poly.counts(pts = letters.spdf, polys = shapefiles)
-  contiguous_counts
-  
-  contiguous_counts_df <- data.frame(contiguous_counts)
-  shapefiles@data$Count.of.Send.Locations <-
-    contiguous_counts_df$contiguous_counts
-  # Return for use
-  polygons_with_tallies <- shapefiles
-  polygons_with_tallies
-}
-
-count_letters_in_regions <- function(letters.spdf, shape.files) {
-  shapefiles <- shape.files
-  
-  contiguous_counts <-
-    poly.counts(pts = letters.spdf, polys = shapefiles)
   
   
-  contiguous_counts_df <- data.frame(contiguous_counts)
-  
-  shapefiles@data$Count.of.Send.Locations <-
-    contiguous_counts_df$contiguous_counts
-  # Return for use
-  polygons_with_tallies <- shapefiles
-  polygons_with_tallies
 }
 
 ## ============== Empty states
