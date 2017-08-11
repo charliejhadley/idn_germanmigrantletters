@@ -34,6 +34,38 @@ uselesscols_letters_df <- c("id.letter", "bytes", "na.ger", "letter.series", "re
                             "data.ambiguous", "sender", "receiver", "location.sender", "location.receiver"
 )
 
+## ============== Add decade column
+
+earliest_decade <- year(floor_date(min(letters_df$date, na.rm = TRUE), unit = "10 years"))
+
+latest_decade <- year(ceiling_date(max(letters_df$date, na.rm = TRUE), unit = "10 years"))
+
+letters_df <- letters_df %>%
+  mutate(decade = cut(year(date),
+                      breaks = seq(earliest_decade, latest_decade, by = 10),
+                      right = FALSE,
+                      dig.lab = 4)) %>%
+  mutate(decade = fct_recode(
+    decade,
+    "1810-1819" = "[1810,1820)",
+    "1820-1829" = "[1820,1830)",
+    "1830-1839" = "[1830,1840)",
+    "1840-1849" = "[1840,1850)",
+    "1850-1859" = "[1850,1860)",
+    "1860-1869" = "[1860,1870)",
+    "1870-1879" = "[1870,1880)",
+    "1880-1889" = "[1880,1890)",
+    "1890-1899" = "[1890,1900)",
+    "1900-1909" = "[1900,1910)",
+    "1910-1919" = "[1910,1920)",
+    "1920-1929" = "[1920,1930)",
+    "1930-1939" = "[1930,1940)",
+    "1940-1949" = "[1940,1950)",
+    "1950-1959" = "[1950,1960)",
+    "1960-1969" = "[1960,1970)",
+    "1970-1979" = "[1970,1980)"
+  ))
+
 
 ## ============== Shapefiles 
 states_shapefiles <- readOGR(
