@@ -8,6 +8,17 @@ letters_df <- read_csv("data/all_letters.csv")
 letters_df <- letters_df %>%
   mutate(journey = paste(sender.latitude, sender.longitude, receiver.latitude, receiver.longitude))
 
+letters_df <- letters_df %>%
+  separate(sender.location, into = c("sender.country", "sender.city"), extra = "merge", remove = FALSE) %>%
+  mutate(sender.state = str_extract(sender.city, "\\([^()]+\\)")) %>%
+  mutate(sender.state = gsub("\\(|\\)", "", sender.state)) %>%
+  filter(str_length(sender.state) <= 2) %>%
+  mutate(sender.city = trimws(str_replace(sender.city, "\\([^()]{0,}\\)", ""))) %>%
+  separate(receiver.location, into = c("receiver.country", "receiver.city"), extra = "merge", remove = FALSE) %>%
+  mutate(receiver.state = str_extract(receiver.city, "\\([^()]+\\)")) %>%
+  mutate(receiver.state = gsub("\\(|\\)", "", receiver.state)) %>%
+  mutate(receiver.city = trimws(str_replace(receiver.city, "\\([^()]{0,}\\)", "")))
+
 usefulcols_letters_df <- c("sender.location",
                            "sender.latitude",
                            "sender.longitude",
