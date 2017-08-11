@@ -57,7 +57,10 @@ shinyUI(
                sidebarLayout(
                  sidebarPanel(
                    uiOutput("journeys_checkbox_datefilter_UI"),
-                   uiOutput("journeys_date_slider_ui")
+                   uiOutput("journeys_date_slider_ui"),
+                   checkboxInput("highlight_selected_families",
+                                 "Highlight selected families?",
+                                 value = FALSE)
                  ),
                  mainPanel(
                    div(id = "loading-journeys",
@@ -70,29 +73,34 @@ shinyUI(
                )
                
              )),
-    tabPanel("Specific Family History",
+    tabPanel("ggplot2 Specific Family Map",
              fluidPage(
-               # runcodeUI(code = "shinyjs::alert('Hello!')", width = "100%", height = "400px"),
-               fluidRow(
-                 column(
-                   wellPanel(
-                     uiOutput("selected_family_UI"),
-                     uiOutput("selected_family_checkbox_datefilter_UI"),
-                     uiOutput("selected_family_date_slider_ui")
-                   ),
-                   uiOutput("selected_family_click_summary"),
-                   width = 4
-                 ),
-                 column(
-                   div(id = "loading-selected-family",
-                       fluidPage(
-                         h2(class = "animated infinite pulse", "Loading data...")
-                         # HTML("<img src=images/cruk-logo.png width='50%'></img>")
-                       )),
-                   leafletOutput("selected_family_letters_journeys_map"),
-                   width = 8
-                 )
-               ),
-               uiOutput("selected_family_letter_viewers_UI")
+               wellPanel(uiOutput("selected_family_date_range_UI")),
+               plotOutput("selected_family_ggplot_map")
              ))
+    # tabPanel("Specific Family History",
+    #          fluidPage(
+    #            # runcodeUI(code = "shinyjs::alert('Hello!')", width = "100%", height = "400px"),
+    #            fluidRow(
+    #              column(
+    #                wellPanel(
+    #                  uiOutput("selected_family_UI"),
+    #                  uiOutput("selected_family_checkbox_datefilter_UI"),
+    #                  uiOutput("selected_family_date_slider_ui")
+    #                ),
+    #                uiOutput("selected_family_click_summary"),
+    #                width = 4
+    #              ),
+    #              column(
+    #                div(id = "loading-selected-family",
+    #                    fluidPage(
+    #                      h2(class = "animated infinite pulse", "Loading data...")
+    #                      # HTML("<img src=images/cruk-logo.png width='50%'></img>")
+    #                    )),
+    #                leafletOutput("selected_family_letters_journeys_map"),
+    #                width = 8
+    #              )
+    #            ),
+    #            uiOutput("selected_family_letter_viewers_UI")
+    #          ))
   ))
