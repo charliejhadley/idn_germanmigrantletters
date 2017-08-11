@@ -1,79 +1,56 @@
+## ============== count_letters_in_shp
 
-## ============== Convert df to SPDF
-
-spdf_letters <- function(letters.data = NA, send.or.receive = "both"){
-  switch(send.or.receive,
-         "both" = {
-           letters.data %>%
-           {
-             a <- select(., sender.latitude, sender.longitude) %>%
-               rename(latitude = sender.latitude, longitude = sender.longitude)
-             b <- select(., receiver.latitude, receiver.longitude) %>%
-               rename(latitude = receiver.latitude, longitude = receiver.longitude)
-             rbind(a,b)
-           } %>%
-             select(longitude, latitude) %>% # SPDF are longitude, latitude pairs
-             na.omit() %>%
-             SpatialPointsDataFrame(
-               coords = .,
-               data = .,
-               proj4string = proj4_string
-             )
-         },
-         "sender" = {
-           letters.data %>%
-             select(sender.longitude, sender.latitude) %>% # SPDF are longitude, latitude pairs
-             na.omit() %>%
-             SpatialPointsDataFrame(
-               coords = .,
-               data = .,
-               proj4string = proj4_string
-             )
-         },
-         "receiver" = {
-           letters.data %>%
-             select(receiver.longitude, receiver.latitude) %>%  # SPDF are longitude, latitude pairs
-             na.omit() %>%
-             SpatialPointsDataFrame(
-               coords = .,
-               data = .,
-               proj4string = proj4_string
-             )
-         })
-}
-
-
-
-## ============== Count letters per state
-
-count_letters_in_states <- function(letters.spdf = NA){
-  shapefiles <- states_shapefiles
+count_letters_in_shp <- function(letters.data = NA, shp) {
   
-  contiguous_counts <-
-    poly.counts(pts = letters.spdf, polys = shapefiles)
-  contiguous_counts
+  if(nrow(letters.data) == 0){
+    shp %>%
+      mutate(
+        total.count = 0,
+        received.count = 0,
+        send.count = 0
+      )
+  } else {
+    send_letters <- letters.data %>%
+      select(sender.latitude, sender.longitude) %>%
+      rename(latitude = sender.latitude, longitude = sender.longitude) %>%
+      na.omit()
+    
+    receive_letters <- letters.data %>%
+      select(receiver.latitude, receiver.longitude) %>%
+      rename(latitude = receiver.latitude, longitude = receiver.longitude) %>%
+      na.omit()
+    
+    total_letters <- send_letters %>%
+      bind_rows(receive_letters) %>%
+      # unique() %>%
+      st_as_sf(coords = c("longitude", "latitude"),
+               crs = st_crs(shp))
+    
+    sent_letters <- send_letters %>%
+      # unique() %>%
+      st_as_sf(coords = c("longitude", "latitude"),
+               crs = st_crs(shp))
+    
+    received_letters <- receive_letters %>%
+      # unique() %>%
+      st_as_sf(coords = c("longitude", "latitude"),
+               crs = st_crs(shp))
+    
+    the_total.count <- lengths(st_covers(shp, total_letters))
+    the_received.count <- lengths(st_covers(shp, received_letters))
+    the_send.count <- lengths(st_covers(shp, sent_letters))
+    
+    
+    shp %>%
+      mutate(
+        total.count = the_total.count,
+        received.count = the_received.count,
+        send.count = the_send.count
+      )
+    
+  }
   
-  contiguous_counts_df <- data.frame(contiguous_counts)
-  shapefiles@data$Count.of.Send.Locations <-
-    contiguous_counts_df$contiguous_counts
-  # Return for use
-  polygons_with_tallies <- shapefiles
-  polygons_with_tallies
-}
-
-count_letters_in_regions <- function(letters.spdf, shape.files){
-  shapefiles <- shape.files
   
-  contiguous_counts <-
-    poly.counts(pts = letters.spdf, polys = shapefiles)
-  contiguous_counts
-  
-  contiguous_counts_df <- data.frame(contiguous_counts)
-  shapefiles@data$Count.of.Send.Locations <-
-    contiguous_counts_df$contiguous_counts
-  # Return for use
-  polygons_with_tallies <- shapefiles
-  polygons_with_tallies
 }
 
 ## ============== Empty states
@@ -85,81 +62,207 @@ state_outline_only <- {
 ## ============== Great circles
 ## Refer to http://personal.tcu.edu/kylewalker/interactive-flow-visualization-in-r.html
 
-letter_journey_lines <- function(letters.data = NA) {
-  ## Tally letters for polylines
-  tallied_letters <- letters.data %>%
+letter_journey_lines <- function(letters.data, selected.family = "include", unique.or.all = "unique"){
+  
+  selected.family <- rlang::arg_match(selected.family,  c("include", "exclude", "only"))
+  
+  unique.or.all <- rlang::arg_match(unique.or.all,  c("unique", "all"))
+  
+  unique_journies <- letters.data %>%
+    filter(!{is.na(sender.latitude) | is.na(receiver.latitude)}) %>%
     group_by(journey) %>%
     mutate(number.of.letters = n()) %>%
     ungroup() %>%
-    select(-date) %>%
+    select(contains("sender"),
+           contains("receiver"),
+           number.of.letters,
+           -contains("name"),
+           selected.family,
+           date,
+           decade,
+           journey) %>%
     unique()
-
-  letter_journeys <- gcIntermediate(
-    tallied_letters %>%
-      select(sender.longitude, sender.latitude),
-    tallied_letters %>%
-      select(receiver.longitude, receiver.latitude),
-    sp = TRUE,
-    addStartEnd = TRUE
-  )
   
-  letter_journeys$number.of.letters <- tallied_letters$number.of.letters
-  letter_journeys$sender.location <- tallied_letters$sender.location
-  letter_journeys$receiver.location <- tallied_letters$receiver.location
-  # Return for use
-  letter_journeys
-}
-
-journey_termini_data <- function(letters.data = NA, send.or.receive = NA){
-  switch(send.or.receive,
-         "sender" = {
-           letters.data %>%
-             select(-contains("receiver")) %>% # remove receiver cols
-             select(-one_of(uselesscols_letters_df), -date) %>% # remove unique cols
-             distinct() %>%
-             group_by(sender.location) %>%
-             mutate(total.sent = n()) %>%
-             ungroup()
+  switch(selected.family,
+         "include" = {
+           unique_journies
          },
-         "receiver" = {
-           letters.data %>%
-             select(-contains("sender")) %>% # remove receiver cols
-             select(-one_of(uselesscols_letters_df), -date) %>% # remove unique cols
-             distinct() %>%
-             group_by(receiver.location) %>%
-             mutate(total.received = n()) %>%
-             ungroup()
+         "exclude" = {
+           unique_journies <- unique_journies %>%
+             filter(!selected.family)
+         },
+         "only" = {
+           unique_journies <- unique_journies %>%
+             filter(selected.family)
          })
+  
+  send_unique_journies <- unique_journies %>%
+    select(sender.longitude, sender.latitude) %>%
+    rename(
+      longitude = sender.longitude,
+      latitude = sender.latitude) %>%
+    mutate(journey.id = row_number())
+  
+  receive_unique_journies <- unique_journies %>%
+    select(receiver.longitude, receiver.latitude) %>%
+    rename(
+      longitude = receiver.longitude,
+      latitude = receiver.latitude) %>%
+    mutate(journey.id = row_number())
+  
+  df_with_linestrings <- send_unique_journies %>%
+    bind_rows(receive_unique_journies) %>%
+    sf::st_as_sf(coords = c("longitude","latitude")) %>%
+    group_by(journey.id) %>%
+    arrange(journey.id) %>%
+    summarise() %>%
+    sf::st_cast("LINESTRING")
+  
+  st_geometry(unique_journies) <- st_geometry(df_with_linestrings)
+  
+  unique_journies <- st_set_crs(unique_journies, st_crs(shp_all_us_states))
+  
+  if(unique.or.all == "unique"){
+    unique_journies <- unique_journies %>%
+      select(-date, -decade) %>%
+      unique()
+  }
+  
+  unique_journies %>%
+    st_segmentize(units::set_units(500, km))
 }
 
-label_journey <- function(sender.location = NA, receiver.location = NA, number.of.letters = NA){
-  paste0(
-    "<p>Sender: ", sender.location,
-    "</p>",
-    "<p>Receiver: ", receiver.location,
-    "</p>",
-    "<p>Number of letters: ", as.character(number.of.letters),
-    "</p>"
+
+journey_termini_data <- function(letters.data) {
+  receive_points <- letters.data %>%
+    group_by(receiver.location) %>%
+    mutate(total.received = n()) %>%
+    ungroup() %>%
+    select(contains("receiv")) %>%
+    unique() %>%
+    rename(
+      location.name = receiver.location,
+      latitude = receiver.latitude,
+      longitude = receiver.longitude,
+      country = receiver.country
+    )
+  
+  send_points <- letters.data %>%
+    group_by(sender.location) %>%
+    mutate(total.sent = n()) %>%
+    ungroup() %>%
+    select(contains("sen")) %>%
+    unique() %>%
+    rename(
+      location.name = sender.location,
+      latitude = sender.latitude,
+      longitude = sender.longitude,
+      country = sender.country
+    )
+  
+  full_join(receive_points, send_points) %>%
+    select(location.name,
+           latitude,
+           longitude,
+           country,
+           total.sent,
+           total.received)
+}
+
+label_journey <-
+  function(sender.location = NA,
+           receiver.location = NA,
+           number.of.letters = NA) {
+    paste0(
+      "<p>Sender: ",
+      sender.location,
+      "</p>",
+      "<p>Receiver: ",
+      receiver.location,
+      "</p>",
+      "<p>Number of letters: ",
+      as.character(number.of.letters),
+      "</p>"
+    )
+  }
+
+send_only_markers <- function(map, termini.data) {
+  send.only.locs <- journey_termini_data(termini.data) %>%
+    filter(total.sent > 0 & is.na(total.received)) %>%
+    unique()
+  
+  addCircleMarkers(
+    map,
+    data = send.only.locs,
+    lng = ~ longitude,
+    lat = ~ latitude,
+    fill = TRUE,
+    radius = 1.8,
+    stroke = TRUE,
+    color = "#fdae61",
+    popup = ~ paste0(
+      "<p>Send Location: ",
+      location.name,
+      "</p>",
+      "<p>Number of letters sent: ",
+      total.sent,
+      "</p>"
+    ),
+    opacity = 0.5
   )
 }
 
-label_termini_sender <- function(sender.location, total.sent){
-  paste0(
-    "<p>Send Location: ", sender.location,
-    "</p>",
-    "<p>Number of letters sent: ", total.sent,
-    "</p>"
+receive_only_markers <- function(map, termini.data) {
+  receive.only.locs <- journey_termini_data(termini.data) %>%
+    filter(total.received > 0 & is.na(total.sent)) %>%
+    unique()
+  
+  addCircleMarkers(
+    map,
+    data = receive.only.locs,
+    lng = ~ longitude,
+    lat = ~ latitude,
+    fill = TRUE,
+    radius = 1.8,
+    stroke = TRUE,
+    color = "#d7191c",
+    popup = ~ paste0(
+      "<p>Receive Location: ",
+      location.name,
+      "</p>",
+      "<p>Number of letters received: ",
+      total.received,
+      "</p>"
+    ),
+    opacity = 0.5
   )
 }
 
-label_termini_receiver <- function(receiver.location, total.received){
-  paste0(
-    "<p>Send Location: ", receiver.location,
-    "</p>",
-    "<p>Number of letters received: ", total.received,
-    "</p>"
+two_way_markers <- function(map, termini.data) {
+  receive.only.locs <- journey_termini_data(termini.data) %>%
+    filter(total.sent > 0 & total.received > 0) %>%
+    unique()
+  
+  addCircleMarkers(
+    map,
+    data = receive.only.locs,
+    lng = ~ longitude,
+    lat = ~ latitude,
+    fill = TRUE,
+    radius = 1.8,
+    stroke = TRUE,
+    color = "#7570b3",
+    popup = ~ paste0(
+      "<p>Two-way Location: ",
+      location.name,
+      "</p>",
+      "<p>Number of letters received: ",
+      total.received,
+      "</p>",
+      "<p>Number of letters send: ",
+      total.sent,
+      "</p>"
+    ),
+    opacity = 0.5
   )
 }
-
-
-
