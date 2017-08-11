@@ -10,19 +10,18 @@ output$journeys_checkbox_datefilter_UI <- renderUI({
 
 observeEvent(input$journeys_checkbox_datefilter,
              {
-               if(is.null(input$journeys_checkbox_datefilter)){
+               if (is.null(input$journeys_checkbox_datefilter)) {
                  return()
                }
                
-               enable_date_slider <- !input$journeys_checkbox_datefilter
+               enable_date_slider <-
+                 !input$journeys_checkbox_datefilter
                print('enable_date_slider')
                print(enable_date_slider)
                toggleState(id = "journeys_date_slider", condition = enable_date_slider)
-             }
-)
+             })
 
 output$journeys_date_slider_ui <- renderUI({
-
   sliderInput(
     "journeys_date_slider",
     "Date Range",
@@ -59,8 +58,8 @@ journeys_filtered_letters <- eventReactive(c(
     journeys_filtered_letters <- journeys_filtered_letters %>%
       filter_("!is.na(date)")
     
-    min_date <- input$journeys_date_slider[1] 
-    max_date <- input$journeys_date_slider[2] 
+    min_date <- input$journeys_date_slider[1]
+    max_date <- input$journeys_date_slider[2]
     
     journeys_filtered_letters <- journeys_filtered_letters %>%
       filter(date >= min_date &
@@ -74,6 +73,8 @@ ignoreNULL = FALSE)
 
 ## ======================== letter_journeys_map
 ## ================================================
+
+
 
 output$letter_journeys_map <- renderLeaflet({
   if (is.null(input$journeys_checkbox_datefilter)) {
@@ -94,27 +95,98 @@ output$letter_journeys_map <- renderLeaflet({
   
   journeys_filtered_letters <- journeys_filtered_letters()
   
-  leaflet() %>%
-    addProviderTiles("Esri.WorldShadedRelief") %>%
-    addPolylines(
-      data = letter_journey_lines(journeys_filtered_letters),
-      color = rgb(44, 123, 182, max = 255),
-      popup = ~ label_journey(sender.location, receiver.location, number.of.letters),
-      weight = 4,
-      opacity = 0.3
-    ) %>%
-    send_only_markers(journeys_filtered_letters) %>%
-    receive_only_markers(journeys_filtered_letters) %>%
-    two_way_markers(journeys_filtered_letters) %>% {
-      shinyjs::hide(id = "loading-journeys",
-                    anim = TRUE,
-                    animType = "fade")
+  shinyjs::hide(id = "loading-journeys",
+                anim = TRUE,
+                animType = "fade")
+  print(head(journeys_filtered_letters))
+  
+  if(isTRUE(input$highlight_selected_families)){
+    
+    leaflet() %>%
+      addProviderTiles("Esri.WorldShadedRelief") %>%
+      addPolylines(
+        data = letter_journey_lines(letters_df, selected.family = "exclude"),
+        color = rgb(166, 206, 227, max = 255),
+        popup = ~ label_journey(sender.location, receiver.location, number.of.letters),
+        weight = 4,
+        opacity = 0.3
+      ) %>%
+      addPolylines(
+        data = letter_journey_lines(letters_df, selected.family = "only"),
+        color = rgb(31, 120, 180, max = 255),
+        popup = ~ label_journey(sender.location, receiver.location, number.of.letters),
+        weight = 4,
+        opacity = 1
+      ) %>%
+      send_only_markers(journeys_filtered_letters) %>%
+      receive_only_markers(journeys_filtered_letters) %>%
+      two_way_markers(journeys_filtered_letters) %>% 
       addLegendCustom(
         .,
         colors = c("#fdae61", "#d7191c", "#7570b3"),
         labels = c("Sender", "Receiver", "Sender and Receiver"),
         sizes = c(10, 10, 10)
       )
-    }
+    
+      
+      # leaflet() %>%
+      #   addProviderTiles("Esri.WorldShadedRelief") %>%
+      #   addPolylines(
+      #     data = letter_journey_lines(letters_df),
+      #     color = ~ifelse(selected.family == TRUE, rgb(31, 120, 180, max = 255), rgb(166, 206, 227, max = 255)),
+      #     popup = ~ label_journey(sender.location, receiver.location, number.of.letters),
+      #     weight = 4,
+      #     opacity = ~ifelse(selected.family == TRUE, 1, 0.3)
+      #   )
+    
+    
+    
+  } else {
+    leaflet() %>%
+      addProviderTiles("Esri.WorldShadedRelief") %>%
+      addPolylines(
+        data = letter_journey_lines(journeys_filtered_letters),
+        color = rgb(44, 123, 182, max = 255),
+        popup = ~ label_journey(sender.location, receiver.location, number.of.letters),
+        weight = 4,
+        opacity = 0.3
+      ) %>%
+      send_only_markers(journeys_filtered_letters) %>%
+      receive_only_markers(journeys_filtered_letters) %>%
+      two_way_markers(journeys_filtered_letters) %>% 
+      addLegendCustom(
+        .,
+        colors = c("#fdae61", "#d7191c", "#7570b3"),
+        labels = c("Sender", "Receiver", "Sender and Receiver"),
+        sizes = c(10, 10, 10)
+      )
+  }
+  
+
+
+  
+  # leaflet() %>%
+  #   addProviderTiles("Esri.WorldShadedRelief") %>%
+  #   addPolylines(
+  #     data = letter_journey_lines(journeys_filtered_letters),
+  #     color = rgb(44, 123, 182, max = 255),
+  #     popup = ~ label_journey(sender.location, receiver.location, number.of.letters),
+  #     weight = 4,
+  #     opacity = 0.3
+  #   ) %>%
+  #   send_only_markers(journeys_filtered_letters) %>%
+  #   receive_only_markers(journeys_filtered_letters) %>%
+  #   two_way_markers(journeys_filtered_letters) %>% {
+  #     shinyjs::hide(id = "loading-journeys",
+  #                   anim = TRUE,
+  #                   animType = "fade")
+  #     addLegendCustom(
+  #       .,
+  #       colors = c("#fdae61", "#d7191c", "#7570b3"),
+  #       labels = c("Sender", "Receiver", "Sender and Receiver"),
+  #       sizes = c(10, 10, 10)
+  #     )
+  
+  
   
 })
