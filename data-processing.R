@@ -106,8 +106,9 @@ selected_families_letters <- letters_df %>%
 
 unique_selected_letter_locations <- selected_families_letters %>%
   select(sender.longitude, sender.latitude) %>%
-  unique() %>%
-  mutate(ggplot.necessity = "Send Location") %>%
-  st_as_sf(coords = c("sender.longitude", "sender.latitude"), crs = st_crs(states_shapefiles))
+  unique()
 
+## ============== Letter text
 
+text_of_letters <- read_csv("data/letters-text_S001.csv")
+colnames(text_of_letters) <- tolower(make.names(colnames(text_of_letters)))
