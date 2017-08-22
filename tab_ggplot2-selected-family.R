@@ -106,29 +106,115 @@ selected_family_CircleMarkers_data <-
 
 observeEvent(input$selected_family_date_range,
              {
-               start.time.period <- dmy(paste0("01-01", input$selected_family_date_range[1]))
-               end.time.period <- dmy(paste0("01-01", input$selected_family_date_range[2]))
+               # start.time.period <- dmy(paste0("01-01", input$selected_family_date_range[1]))
+               # end.time.period <- dmy(paste0("01-01", input$selected_family_date_range[2]))
+               #
+               # interval_in_years <- interval(start.time.period, end.time.period) / years(1)
+               #
+               # all_selected_family_send_locations <- selected_families_letters %>%
+               #   select(sender.latitude, sender.longitude) %>%
+               #   unique()
+               #
+               # current_timeperiod <- selected_families_letters %>%
+               #   filter(date >= start.time.period &
+               #            date < end.time.period) %>%
+               #   select(sender.latitude, sender.longitude) %>%
+               #   unique() %>%
+               #   mutate(type = "current.time.period")
+               #
+               # previous_timeperiod <- selected_families_letters %>%
+               #   filter(date >= start.time.period - dyears(interval_in_years) &
+               #            date <= end.time.period - dyears(interval_in_years)) %>%
+               #   select(sender.latitude, sender.longitude) %>%
+               #   unique() %>%
+               #   mutate(type = "previous.time.period")
+               #
+               # current_timeperiod <- current_timeperiod %>%
+               #   anti_join(previous_timeperiod)
+               #
+               # other_locations <- all_selected_family_send_locations %>%
+               #   anti_join(current_timeperiod) %>%
+               #   anti_join(previous_timeperiod) %>%
+               #   mutate(type = "no.sent.letters")
+               #
+               # current_timeperiod <- current_timeperiod %>%
+               #   st_as_sf(coords = c("sender.longitude", "sender.latitude")) %>%
+               #   st_set_crs(st_crs(states_shapefiles))
+               #
+               # previous_timeperiod <- previous_timeperiod %>%
+               #   st_as_sf(coords = c("sender.longitude", "sender.latitude")) %>%
+               #   st_set_crs(st_crs(states_shapefiles))
+               #
+               # other_locations <- other_locations %>%
+               #   st_as_sf(coords = c("sender.longitude", "sender.latitude")) %>%
+               #   st_set_crs(st_crs(states_shapefiles))
                
-               interval_in_years <- interval(start.time.period, end.time.period) / years(1)
+               selected_family_CircleMarkers_data <-
+                 selected_family_CircleMarkers_data() %>%
+                 st_as_sf(coords = c("sender.longitude", "sender.latitude")) %>%
+                 st_set_crs(st_crs(states_shapefiles))
                
-               all_selected_family_send_locations <- selected_families_letters %>%
-                 select(sender.latitude, sender.longitude) %>%
-                 unique()
+               leafletProxy("selected_family_leaflet_map") %>%
+                 clearMarkers() %>%
+                 addCircleMarkers(
+                   data = selected_family_CircleMarkers_data,
+                   radius = 5,
+                   weight = 1,
+                   stroke = TRUE,
+                   opacity = 1,
+                   fillOpacity = 1,
+                   fillColor = ~ color,
+                   color = "#000000"
+                 )
                
-               current_decade <- selected_families_letters %>%
-                 filter(date >= start.time.period &
-                          date < end.time.period) %>%
-                 select(sender.latitude, sender.longitude) %>%
-                 unique()
-               
-               previous_decade <- selected_families_letters %>%
-                 filter(date >= start.time.period - dyears(interval_in_years) &
-                          date <= end.time.period - dyears(interval_in_years)) %>%
-                 select(sender.latitude, sender.longitude) %>%
-                 unique()
-               
-               current_decade <- current_decade %>%
-                 anti_join(previous_decade)
+               # leafletProxy("selected_family_leaflet_map") %>%
+               #   clearMarkers() %>%
+               #     data = if (nrow(other_locations) == 0) {
+               #       tibble(lat = as.numeric(),
+               #              long = as.numeric())
+               #     } else {
+               #       other_locations
+               #     },
+               #     radius = 5,
+               #     weight = 1,
+               #     stroke = TRUE,
+               #     opacity = 1,
+               #     fillOpacity = 1,
+               #     fillColor = "#c4c4c4",
+               #     color = "#000000"
+               #   ) %>%
+               #   addCircleMarkers(
+               #     data = if (nrow(previous_timeperiod) == 0) {
+               #       tibble(lat = as.numeric(),
+               #              long = as.numeric())
+               #     } else {
+               #       previous_timeperiod
+               #     },
+               #     radius = 5,
+               #     weight = 1,
+               #     stroke = TRUE,
+               #     opacity = 1,
+               #     fillOpacity = 1,
+               #     fillColor = "#fdbf6f",
+               #     color = "#000000"
+               #   ) %>%
+               #   addCircleMarkers(
+               #     data = if (nrow(current_timeperiod) == 0) {
+               #       tibble(lat = as.numeric(),
+               #              long = as.numeric())
+               #     } else {
+               #       current_timeperiod
+               #     },
+               #     radius = 5,
+               #     weight = 1,
+               #     stroke = TRUE,
+               #     opacity = 1,
+               #     fillOpacity = 1,
+               #     fillColor = "#ff7f00",
+               #     color = "#000000"
+               #   )
+               #
+             })
                
                other_locations <- all_selected_family_send_locations %>%
                  anti_join(current_decade) %>%
