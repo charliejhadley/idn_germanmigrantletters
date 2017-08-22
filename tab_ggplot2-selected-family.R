@@ -26,6 +26,9 @@ output$selected_family_which_family_UI <- renderUI({
               choices = selected_family_letter_series)
   
 })
+
+output$selected_family_leaflet_map <- renderLeaflet({
+  if (is.null(input$selected_family_date_range)) {
     return()
   }
   
@@ -38,6 +41,13 @@ output$selected_family_which_family_UI <- renderUI({
       smoothFactor = 0.2,
       fillOpacity = 0.8,
       weight = 1
+    ) %>%
+    addLegendCustom(
+      colors = c("#fdbf6f", "#ff7f00", "#c4c4c4"),
+      labels = c("Previous time period", "Current time period", "No letters sent"),
+      sizes = c(10, 10, 10),
+      title = "Letters sent from location?",
+      opacity = 1
     )
   
 })
