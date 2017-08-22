@@ -52,6 +52,58 @@ output$selected_family_leaflet_map <- renderLeaflet({
   
 })
 
+
+
+selected_family_CircleMarkers_data <-
+  eventReactive(input$selected_family_date_range,
+                {
+                  selected_family_letters <- selected_families_letters %>%
+                    filter(grepl(input$selected_family_which_family, id.letter))
+                  
+                  start.time.period <-
+                    dmy(paste0("01-01", input$selected_family_date_range[1]))
+                  end.time.period <-
+                    dmy(paste0("01-01", input$selected_family_date_range[2]))
+                  
+                  interval_in_years <-
+                    interval(start.time.period, end.time.period) / years(1)
+                  
+                  new_previous_decade <-
+                    selected_family_letters %>%
+                    filter(
+                      date >= start.time.period - dyears(interval_in_years) &
+                        date <= end.time.period - dyears(interval_in_years)
+                    ) %>%
+                    select(sender.latitude, sender.longitude) %>%
+                    unique() %>%
+                    mutate(type = "previous",
+                           color = "#fdbf6f")
+                  
+                  new_current_decade <-
+                    selected_family_letters %>%
+                    filter(date >= start.time.period &
+                             date <= end.time.period) %>%
+                    select(sender.latitude, sender.longitude) %>%
+                    unique() %>%
+                    mutate(type = "current",
+                           color = "#ff7f00")
+                  
+                  other_locations <-
+                    unique_selected_letter_locations %>%
+                    mutate(type = "no.sent",
+                           color = "#c4c4c4") %>%
+                    anti_join(new_current_decade,
+                              by = c("sender.latitude", "sender.longitude")) %>%
+                    anti_join(new_previous_decade,
+                              by = c("sender.latitude", "sender.longitude"))
+                  
+                  new_current_decade %>%
+                    full_join(new_previous_decade) %>%
+                    full_join(other_locations) %>%
+                    distinct(sender.latitude, sender.longitude, .keep_all = TRUE)
+                  
+                })
+
 observeEvent(input$selected_family_date_range,
              {
                start.time.period <- dmy(paste0("01-01", input$selected_family_date_range[1]))
