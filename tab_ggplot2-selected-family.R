@@ -1,17 +1,22 @@
 output$selected_family_date_range_UI <- renderUI({
+  selected_family_letters <- selected_families_letters %>%
+    filter(grepl(input$selected_family_which_family, id.letter))
+  
   
   sliderInput(
     "selected_family_date_range",
     "Date Range",
-    min = year(min(selected_families_letters$date, na.rm = TRUE)),
-    max = year(max(selected_families_letters$date, na.rm = TRUE)),
-    value = c(
-      1835,
-      1845
+    min = year(min(selected_family_letters$date, na.rm = TRUE)),
+    max = year(max(selected_family_letters$date, na.rm = TRUE)),
+    value = c(year(
+      min(selected_family_letters$date, na.rm = TRUE)
     ),
+    year(
+      min(selected_family_letters$date, na.rm = TRUE)
+    ) + 10),
     step = 10,
     width = "100%",
-    animate = animationOptions(interval = 1500)
+    animate = animationOptions(interval = 3000)
   )
 })
 
