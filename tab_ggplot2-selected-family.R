@@ -20,9 +20,12 @@ output$selected_family_date_range_UI <- renderUI({
   )
 })
 
-output$selected_family_leaflet_map <- renderLeaflet({
+output$selected_family_which_family_UI <- renderUI({
+  selectInput("selected_family_which_family",
+              "Which family to show?",
+              choices = selected_family_letter_series)
   
-  if(is.null(input$selected_family_date_range)){
+})
     return()
   }
   
