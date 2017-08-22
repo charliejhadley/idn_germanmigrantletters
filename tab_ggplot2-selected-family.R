@@ -126,6 +126,98 @@ observeEvent(input$selected_family_date_range,
                  )
               
              })
+
+
+output$sender_letter_viewer_UI <- renderUI({
+  
+  if(is.null(input$selected_family_leaflet_map_marker_click)){
+    return()
+  }
+  
+  clicked_marker <- input$selected_family_leaflet_map_marker_click
+  
+  selected_family_CircleMarkers_data <-
+    selected_family_CircleMarkers_data()
+  
+  start.time.period <-
+    dmy(paste0("01-01", input$selected_family_date_range[1]))
+  end.time.period <-
+    dmy(paste0("01-01", input$selected_family_date_range[2]))
+  
+  clicked_type <- selected_family_CircleMarkers_data %>%
+    filter(sender.latitude == clicked_marker$lat,
+           sender.longitude == clicked_marker$lng) %>%
+    select(type) %>%
+    .[[1]]
+  
+  selected_family_letters <- selected_families_letters %>%
+    filter(grepl(
+      input$selected_family_which_family, id.letter
+    )) %>%
+    filter(date >= start.time.period & date <= end.time.period) %>%
+    filter(
+      sender.latitude == clicked_marker$lat &
+        sender.longitude == clicked_marker$lng
+    )
+  
+  location_name <- locations_df %>%
+    filter(latitude == clicked_marker$lat,
+           longitude == clicked_marker$lng) %>%
+    select(location.string) %>%
+    unique() %>%
+    .[[1]]
+  
+  nletters_sent <- selected_family_letters %>%
+    nrow()
+  
+  letter_ids <- selected_family_letters %>%
+    select(id.letter) %>%
+    .[[1]]
+  
+  switch(clicked_type,
+         "no.sent" = {
+           paste("No letters were sent from", location_name, "location in the selected time period")
+         },
+         "previous" = {
+           paste("Letters were sent from", location_name, "location in the previous time period")
+         },
+         "current" = {
+           
+           if (is.null(input$sender_letter_viewer$page_current)) {
+             fluidPage(pageruiInput('sender_letter_viewer', 1, nletters_sent),
+                       hr(),
+                       "")
+           } else {
+             if (nletters_sent > 0) {
+               fluidPage(
+                 h5(
+                   paste0("Letters sent from ", location_name)
+                 ),
+                 pageruiInput('sender_letter_viewer', 1, nletters_sent),
+                 hr(),
+                 HTML(gsub("\r", "<br>",
+                           
+                           #           read_file(
+                           #   paste0("data-raw/target-family/", letter_ids[input$sender_letter_viewer$page_current], ".txt")
+                           # )
+                           #
+                           text_of_letters %>%
+                             filter(id == letter_ids[input$sender_letter_viewer$page_current]) %>%
+                             select(truncated.text)
+                 ))
+               )
+             }
+           }
+           
+         })
+  
+  
+
+  
+
+
+  
+})
                
                other_locations <- all_selected_family_send_locations %>%
                  anti_join(current_decade) %>%
