@@ -169,6 +169,7 @@ observeEvent(input$selected_family_date_range,
                
                # leafletProxy("selected_family_leaflet_map") %>%
                #   clearMarkers() %>%
+               #   addCircleMarkers(
                #     data = if (nrow(other_locations) == 0) {
                #       tibble(lat = as.numeric(),
                #              long = as.numeric())
