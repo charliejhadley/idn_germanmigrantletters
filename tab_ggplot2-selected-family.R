@@ -263,16 +263,3 @@ observeEvent(input$sender_letter_viewer$page_current,
              },
              ignoreInit = TRUE)
 
-
-
-output$selected_family_ggplot_map <- renderPlot({
-  
-  start_time_period <- dmy(paste0("01-01", input$selected_family_date_range[1]))
-  end.timeperiod <- dmy(paste0("01-01", input$selected_family_date_range[2]))
-  
-  geom_letter_decade_points(map = gmap_selected_sender_locs,
-                            start.time.period = start_time_period,
-                            end.time.period = end.timeperiod)
-  
-})
-
