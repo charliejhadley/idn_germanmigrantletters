@@ -218,43 +218,52 @@ output$sender_letter_viewer_UI <- renderUI({
 
   
 })
+
+observeEvent(input$sender_letter_viewer$page_current,
+             {
+               clicked_marker <- input$selected_family_leaflet_map_marker_click
                
-               other_locations <- all_selected_family_send_locations %>%
-                 anti_join(current_decade) %>%
-                 anti_join(previous_decade)
+               selected_family_CircleMarkers_data <-
+                 selected_family_CircleMarkers_data()
                
-               current_decade <- current_decade %>%
-                 st_as_sf(coords = c("sender.longitude", "sender.latitude")) %>%
-                 st_set_crs(st_crs(states_shapefiles))
+               start.time.period <-
+                 dmy(paste0("01-01", input$selected_family_date_range[1]))
+               end.time.period <-
+                 dmy(paste0("01-01", input$selected_family_date_range[2]))
                
-               previous_decade <- previous_decade %>%
-                 st_as_sf(coords = c("sender.longitude", "sender.latitude")) %>%
-                 st_set_crs(st_crs(states_shapefiles))
+               clicked_type <- selected_family_CircleMarkers_data %>%
+                 filter(sender.latitude == clicked_marker$lat,
+                        sender.longitude == clicked_marker$lng) %>%
+                 select(type) %>%
+                 .[[1]]
                
-               other_locations <- other_locations %>%
-                 st_as_sf(coords = c("sender.longitude", "sender.latitude")) %>%
-                 st_set_crs(st_crs(states_shapefiles))
+               selected_family_letters <- selected_families_letters %>%
+                 filter(grepl(
+                   input$selected_family_which_family, id.letter
+                 )) %>%
+                 filter(date >= start.time.period & date <= end.time.period) %>%
+                 filter(
+                   sender.latitude == clicked_marker$lat &
+                     sender.longitude == clicked_marker$lng
+                 )
                
+               nletters_sent <- selected_family_letters %>%
+                 nrow()
                
-               leafletProxy("selected_family_leaflet_map") %>%
-                 clearMarkers() %>%
-                 addCircleMarkers(data = other_locations,
-                                  radius = 3,
-                                  stroke = TRUE,
-                                  opacity = 1,
-                                  color = "#c4c4c4") %>%
-                 addCircleMarkers(data = previous_decade,
-                                  radius = 3,
-                                  stroke = TRUE,
-                                  opacity = 1,
-                                  color = "#fdbf6f") %>%
-                 addCircleMarkers(data = current_decade,
-                                  radius = 3,
-                                  stroke = TRUE,
-                                  opacity = 1,
-                                  color = "#ff7f00")
+               letter_ids <- selected_family_letters %>%
+                 select(id.letter) %>%
+                 .[[1]]
                
-             })
+               updatePageruiInput(
+                 session,
+                 'sender_letter_viewer',
+                 page_current = input$sender_letter_viewer$page_current,
+                 pages_total = nletters_sent
+               )
+             },
+             ignoreInit = TRUE)
+
+
 
 output$selected_family_ggplot_map <- renderPlot({
   
