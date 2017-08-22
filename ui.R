@@ -75,9 +75,16 @@ shinyUI(
              )),
     tabPanel("ggplot2 Specific Family Map",
              fluidPage(
-               wellPanel(uiOutput("selected_family_date_range_UI")),
+               wellPanel(
+                 uiOutput("selected_family_which_family_UI"),
+                 uiOutput("selected_family_date_range_UI")),
                # plotOutput("selected_family_ggplot_map"),
-               leafletOutput("selected_family_leaflet_map")
+               fluidRow(
+                 column(leafletOutput("selected_family_leaflet_map"),
+                        width = 7),
+                 column(uiOutput("sender_letter_viewer_UI"),
+                        width = 5)
+               )
              ))
     # tabPanel("Specific Family History",
     #          fluidPage(
