@@ -9,10 +9,10 @@ shinyUI(
 
     # includeCSS("www/custom_leaflet_legend.css"),
     "",
-    # tabPanel("German Migrant Letters",
-    #          fluidPage(includeMarkdown(
-    #            knitr::knit("tab_about.Rmd")
-    #          ))),
+    tabPanel("German Migrant Letters",
+             fluidPage(includeMarkdown(
+               knitr::knit("tab_about.Rmd")
+             ))),
     tabPanel("US Choropleth",
   fluidPage(
     useShinyjs(),

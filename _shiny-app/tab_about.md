@@ -1,7 +1,3 @@
-<center><img src="images/uni-oxford-logo.png" style="padding: 28px"/>
-<img src="images/leverhulme-trust.jpg" style="padding: 28px" width="300px"/>
-
-</center>
 
 <div class="row">
 
@@ -45,4 +41,9 @@
 <br/>
 </div>
 
-</div>
+<center><img src="images/uni-oxford-logo.png" style="padding: 28px"/>
+<img src="images/leverhulme-trust.jpg" style="padding: 28px" width="300px"/>
+
+</center>
+
+
