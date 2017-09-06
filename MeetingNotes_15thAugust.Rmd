@@ -1,0 +1,13 @@
+---
+title: "MeetingNotes_15thAugust"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+- Jitter send location points on selected family tab
+- Allow user to select the family of interest
+- Switch from ggplot2 to leaflet to allow popups
+- Consider how to display the letter images.
