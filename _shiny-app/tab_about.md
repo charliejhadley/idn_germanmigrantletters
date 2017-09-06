@@ -1,15 +1,4 @@
 
-<div class="row">
-
-<div class="col-md-3">
-<center>
-<img src="images/felix-profile.jpg" style="padding: 28px" height="200px"/>
-<img src="images/gwen-profile.jpg" style="padding: 28px" height="200px"/>
-</center>
-</div>
-
-<div class="col-md-9">
-
 <b>Project Title:</b> Understanding Immigrant Integration through Migrant Letters. Correspondence between German-speaking migrants in America and their families and friends 'back home'.
 <br/>
 <br/>
@@ -39,7 +28,6 @@
 <br/>
 <b>Notes</b> The data set and visualization are made available on a CC-BY license. You are free to use them in other publications as long as you credit the authors. Please link back to this page or include the following citation:
 <br/>
-</div>
 
 <center><img src="images/uni-oxford-logo.png" style="padding: 28px"/>
 <img src="images/leverhulme-trust.jpg" style="padding: 28px" width="300px"/>
