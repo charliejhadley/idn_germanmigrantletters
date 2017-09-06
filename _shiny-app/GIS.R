@@ -62,9 +62,8 @@ state_outline_only <- {
 ## ============== Great circles
 ## Refer to http://personal.tcu.edu/kylewalker/interactive-flow-visualization-in-r.html
 
-letter_journey_lines <- function(letters.data, selected.family = "include", unique.or.all = "unique"){
+letter_journey_lines <- function(letters.data, unique.or.all = "unique"){
   
-  selected.family <- rlang::arg_match(selected.family,  c("include", "exclude", "only"))
   
   unique.or.all <- rlang::arg_match(unique.or.all,  c("unique", "all"))
   
@@ -83,53 +82,50 @@ letter_journey_lines <- function(letters.data, selected.family = "include", uniq
            journey) %>%
     unique()
   
-  switch(selected.family,
-         "include" = {
-           unique_journies
-         },
-         "exclude" = {
-           unique_journies <- unique_journies %>%
-             filter(!selected.family)
-         },
-         "only" = {
-           unique_journies <- unique_journies %>%
-             filter(selected.family)
-         })
   
-  send_unique_journies <- unique_journies %>%
-    select(sender.longitude, sender.latitude) %>%
-    rename(
-      longitude = sender.longitude,
-      latitude = sender.latitude) %>%
-    mutate(journey.id = row_number())
-  
-  receive_unique_journies <- unique_journies %>%
-    select(receiver.longitude, receiver.latitude) %>%
-    rename(
-      longitude = receiver.longitude,
-      latitude = receiver.latitude) %>%
-    mutate(journey.id = row_number())
-  
-  df_with_linestrings <- send_unique_journies %>%
-    bind_rows(receive_unique_journies) %>%
-    sf::st_as_sf(coords = c("longitude","latitude")) %>%
-    group_by(journey.id) %>%
-    arrange(journey.id) %>%
-    summarise() %>%
-    sf::st_cast("LINESTRING")
-  
-  st_geometry(unique_journies) <- st_geometry(df_with_linestrings)
-  
-  unique_journies <- st_set_crs(unique_journies, st_crs(shp_all_us_states))
-  
-  if(unique.or.all == "unique"){
-    unique_journies <- unique_journies %>%
-      select(-date, -decade) %>%
-      unique()
+  if(nrow(unique_journies) == 0){
+    tibble(
+      lat = as.numeric(),
+      lng = as.numeric()
+    )
+  } else {
+    send_unique_journies <- unique_journies %>%
+      select(sender.longitude, sender.latitude) %>%
+      rename(
+        longitude = sender.longitude,
+        latitude = sender.latitude) %>%
+      mutate(journey.id = row_number())
+    
+    receive_unique_journies <- unique_journies %>%
+      select(receiver.longitude, receiver.latitude) %>%
+      rename(
+        longitude = receiver.longitude,
+        latitude = receiver.latitude) %>%
+      mutate(journey.id = row_number())
+    
+    df_with_linestrings <- send_unique_journies %>%
+      bind_rows(receive_unique_journies) %>%
+      sf::st_as_sf(coords = c("longitude","latitude")) %>%
+      group_by(journey.id) %>%
+      arrange(journey.id) %>%
+      summarise() %>%
+      sf::st_cast("LINESTRING")
+    
+    st_geometry(unique_journies) <- st_geometry(df_with_linestrings)
+    
+    unique_journies <- st_set_crs(unique_journies, st_crs(shp_all_us_states))
+    
+    if(unique.or.all == "unique"){
+      unique_journies <- unique_journies %>%
+        select(-date, -decade) %>%
+        unique()
+    }
+    
+    unique_journies %>%
+      st_segmentize(units::set_units(500, km))
   }
   
-  unique_journies %>%
-    st_segmentize(units::set_units(500, km))
+  
 }
 
 
