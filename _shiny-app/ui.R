@@ -66,7 +66,7 @@ shinyUI(
                    checkboxInput("highlight_selected_families",
                                  "Highlight selected families?",
                                  value = FALSE),
-                   h3("Re-write this so that one selects and individual family and that shows the appropriate letters")
+                   uiOutput("letter_journeys_selected_family_UI")
                  ),
                  mainPanel(
                    div(id = "loading-journeys",
