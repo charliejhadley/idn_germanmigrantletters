@@ -21,15 +21,19 @@ observeEvent(input$choropleth_checkbox_datefilter,
              })
 
 output$choropleth_date_slider_ui <- renderUI({
+  
+  year(min(letters_df$date, na.rm = T))
+  
   sliderInput(
     "choropleth_date_slider",
     "Date Range",
-    min = min(letters_df$date, na.rm = T),
-    max = max(letters_df$date, na.rm = T),
+    min = year(min(letters_df$date, na.rm = T)),
+    max = year(max(letters_df$date, na.rm = T)),
     value = c(
-      min(letters_df$date, na.rm = T),
-      max(letters_df$date, na.rm = T)
-    )
+      year(min(letters_df$date, na.rm = T)),
+      year(max(letters_df$date, na.rm = T))
+    ),
+    sep = ""
   )
 })
 
@@ -48,10 +52,13 @@ choropleth_sf_tally <- eventReactive(
     if (input$choropleth_checkbox_datefilter) {
       choropleth_filtered_letters <- choropleth_filtered_letters
     } else {
+      
+      print(dmy(paste0("01-01-",input$choropleth_date_slider[1])))
+      
       choropleth_filtered_letters <- choropleth_filtered_letters %>%
         filter(!is.na(date)) %>%
-        filter(date >= input$choropleth_date_slider[1] &
-                 date <= input$choropleth_date_slider[2])
+        filter(date >= dmy(paste0("01-01-",input$choropleth_date_slider[1])) &
+                 date <= dmy(paste0("31-12-",input$choropleth_date_slider[2])))
     }
     
     selected_shapefile <- switch(

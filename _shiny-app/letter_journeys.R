@@ -25,12 +25,13 @@ output$journeys_date_slider_ui <- renderUI({
   sliderInput(
     "journeys_date_slider",
     "Date Range",
-    min = min(letters_df$date, na.rm = T),
-    max = max(letters_df$date, na.rm = T),
+    min = year(min(letters_df$date, na.rm = T)),
+    max = year(max(letters_df$date, na.rm = T)),
     value = c(
-      min(letters_df$date, na.rm = T),
-      max(letters_df$date, na.rm = T)
-    )
+      year(min(letters_df$date, na.rm = T)),
+      year(max(letters_df$date, na.rm = T))
+    ),
+    sep = ""
   )
   
 })
@@ -58,8 +59,10 @@ journeys_filtered_letters <- eventReactive(c(
     journeys_filtered_letters <- journeys_filtered_letters %>%
       filter_("!is.na(date)")
     
-    min_date <- input$journeys_date_slider[1]
-    max_date <- input$journeys_date_slider[2]
+    
+    
+    min_date <- dmy(paste0("01-01-",input$journeys_date_slider[1]))
+    max_date <- dmy(paste0("01-01-",input$journeys_date_slider[2]))
     
     journeys_filtered_letters <- journeys_filtered_letters %>%
       filter(date >= min_date &
