@@ -84,7 +84,7 @@ shinyUI(
                wellPanel(
                  uiOutput("selected_family_which_family_UI"),
                  uiOutput("selected_family_date_range_UI"),
-                 helpText("To see letters sent from a location, click the dot on the map")),
+                 helpText("To see letters sent from a location, click the dot on the map. Click the \"play\" button (above to the right) to view how letter hubs changed over time.")),
                # plotOutput("selected_family_ggplot_map"),
                fluidRow(
                  column(leafletOutput("selected_family_leaflet_map"),
