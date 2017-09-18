@@ -31,8 +31,9 @@ output$choropleth_date_slider_ui <- renderUI({
     max = year(max(letters_df$date, na.rm = T)),
     value = c(
       year(min(letters_df$date, na.rm = T)),
-      year(max(letters_df$date, na.rm = T))
+      year(min(letters_df$date, na.rm = T)) + 10
     ),
+    animate = animationOptions(interval = 3000),
     sep = ""
   )
 })

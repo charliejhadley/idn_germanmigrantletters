@@ -54,7 +54,7 @@ shinyServer(
     
     # runcodeServer() # for shinyjs::runcodeUI()
     
-    source("us_choropleth.R", local = TRUE)$value
+    source("tab_choropleth.R", local = TRUE)$value
     
     source("letter_journeys.R", local = TRUE)$value
     
