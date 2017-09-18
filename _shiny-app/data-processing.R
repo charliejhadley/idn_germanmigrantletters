@@ -95,9 +95,19 @@ congressional_districts_shapefiles <- shp_all_us_congressional_districts %>%
 
 ## ============== Selected families
 
-selected_family_letter_series <- c("S001", "G004", "B117")
+selected_family_letter_series <- c("Schulz-Bruns Geisberg" = "S001", "Gerstein-Gerstein" = "G004", "Benzler-Degenhard" = "B117")
 
-letters_df <-letters_df %>%
+selected_families <- letters_df %>%
+  filter(grepl(paste0(selected_family_letter_series, collapse = "|"), id.letter)) %>%
+  select(id.letter, letter.series) %>%
+  mutate(id.letter = gsub("_.*", "", id.letter)) %>%
+  unique() %>%
+  rename(series.id = id.letter,
+         series.name = letter.series)
+
+
+
+letters_df <- letters_df %>%
   mutate(selected.family = ifelse(grepl(paste0(selected_family_letter_series, collapse = "|"), id.letter),
          TRUE,FALSE))
 
