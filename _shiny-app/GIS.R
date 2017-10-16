@@ -78,8 +78,7 @@ letter_journey_lines <- function(letters.data, unique.or.all = "unique"){
            -contains("name"),
            selected.family,
            date,
-           decade,
-           journey) %>%
+           decade) %>%
     unique()
   
   
