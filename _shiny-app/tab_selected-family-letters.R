@@ -6,14 +6,12 @@ output$selected_family_date_range_UI <- renderUI({
   sliderInput(
     "selected_family_date_range",
     "Date Range",
-    min = year(min(selected_family_letters$date, na.rm = TRUE)),
-    max = year(max(selected_family_letters$date, na.rm = TRUE)),
-    value = c(year(
-      min(selected_family_letters$date, na.rm = TRUE)
-    ),
-    year(
-      min(selected_family_letters$date, na.rm = TRUE)
-    ) + 10),
+    # min = year(min(selected_family_letters$date, na.rm = TRUE)),
+    min = floor(year(min(selected_family_letters$date, na.rm = TRUE)) / 10) * 10,
+    # max = year(max(selected_family_letters$date, na.rm = TRUE)),
+    max = floor(year(max(selected_family_letters$date, na.rm = TRUE)) / 10) * 10,
+    value = c(floor(year(min(selected_family_letters$date, na.rm = TRUE)) / 10) * 10,
+              floor(year(min(selected_family_letters$date, na.rm = TRUE)) / 10) * 10 + 10),
     step = 10,
     width = "100%",
     animate = animationOptions(interval = 3000),
