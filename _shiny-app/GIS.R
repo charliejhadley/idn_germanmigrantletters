@@ -128,6 +128,18 @@ letter_journey_lines <- function(letters.data, unique.or.all = "unique"){
   
 }
 
+## letters bounding box
+
+bbox_letter_journeys <- letter_journey_lines(letters_df) %>%
+  st_geometry() %>%
+  attributes() %>%
+  .$bbox %>%
+  as.list()
+
+my_fitBounds <- function(map, bbox){
+  fitBounds(map, bbox$xmin, bbox$ymin, bbox$xmax, bbox$ymax)
+}
+
 
 journey_termini_data <- function(letters.data) {
   receive_points <- letters.data %>%
