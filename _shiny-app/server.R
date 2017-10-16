@@ -57,7 +57,7 @@ shinyServer(
     
     source("tab_choropleth.R", local = TRUE)$value
     
-    source("letter_journeys.R", local = TRUE)$value
+    source("tab_letter_journeys.R", local = TRUE)$value
     
     source("selected-family.R", local = TRUE)$value
     
