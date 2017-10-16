@@ -195,15 +195,16 @@ output$sender_letter_viewer_UI <- renderUI({
                  ),
                  pageruiInput('sender_letter_viewer', 1, nletters_sent),
                  hr(),
-                 HTML(gsub("\r", "<br>",
-                           
+                 HTML(gsub("\n", "<br>",
+
                            #           read_file(
                            #   paste0("data-raw/target-family/", letter_ids[input$sender_letter_viewer$page_current], ".txt")
                            # )
                            #
                            text_of_letters %>%
                              filter(id == letter_ids[input$sender_letter_viewer$page_current]) %>%
-                             select(truncated.text)
+                             select(truncated.text) %>%
+                             .[[1]]
                  ))
                )
              }
