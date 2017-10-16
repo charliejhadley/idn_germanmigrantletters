@@ -155,7 +155,8 @@ observeEvent(c(input$choropleth_date_slider,
                      pal = us_palette,
                      values = choropleth_sf_tally[[the_fillColor]],
                      title = the_title_legend,
-                     layerId = "legend"
+                     layerId = "legend",
+                     opacity = 1
                    )
                  },
                  "congressional districts" = {
@@ -194,7 +195,8 @@ observeEvent(c(input$choropleth_date_slider,
                      pal = us_palette,
                      values = choropleth_sf_tally[[the_fillColor]],
                      title = the_title_legend,
-                     layerId = "legend"
+                     layerId = "legend",
+                     opacity = 1
                    )
                  },
                  "counties" = {
@@ -233,7 +235,8 @@ observeEvent(c(input$choropleth_date_slider,
                        pal = us_palette,
                        values = choropleth_sf_tally[[the_fillColor]],
                        title = the_title_legend,
-                       layerId = "legend"
+                       layerId = "legend",
+                       opacity = 1
                      )
                  }
                  
