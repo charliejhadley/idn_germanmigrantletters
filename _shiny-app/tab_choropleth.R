@@ -15,8 +15,6 @@ observeEvent(input$choropleth_checkbox_datefilter,
                
                enable_date_slider <-
                  !input$choropleth_checkbox_datefilter
-               print('enable_date_slider')
-               print(enable_date_slider)
                toggleState(id = "choropleth_date_slider", condition = enable_date_slider)
              })
 
@@ -54,9 +52,6 @@ choropleth_sf_tally <- eventReactive(
     if (input$choropleth_checkbox_datefilter) {
       choropleth_filtered_letters <- choropleth_filtered_letters
     } else {
-      
-      print(dmy(paste0("01-01-",input$choropleth_date_slider[1])))
-      
       choropleth_filtered_letters <- choropleth_filtered_letters %>%
         filter(!is.na(date)) %>%
         filter(date >= dmy(paste0("01-01-",input$choropleth_date_slider[1])) &
