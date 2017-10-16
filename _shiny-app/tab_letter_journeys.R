@@ -16,8 +16,6 @@ observeEvent(input$journeys_checkbox_datefilter,
                
                enable_date_slider <-
                  !input$journeys_checkbox_datefilter
-               print('enable_date_slider')
-               print(enable_date_slider)
                toggleState(id = "journeys_date_slider", condition = enable_date_slider)
              })
 
@@ -25,12 +23,17 @@ output$journeys_date_slider_ui <- renderUI({
   sliderInput(
     "journeys_date_slider",
     "Date Range",
-    min = year(min(letters_df$date, na.rm = T)),
-    max = year(max(letters_df$date, na.rm = T)),
-    value = c(
-      year(min(letters_df$date, na.rm = T)),
-      year(max(letters_df$date, na.rm = T))
-    ),
+    # min = year(min(letters_df$date, na.rm = T)),
+    # max = year(max(letters_df$date, na.rm = T)),
+    min = 1810,
+    max = 1970,
+    # value = c(
+    #   year(min(letters_df$date, na.rm = T)),
+    #   year(max(letters_df$date, na.rm = T))
+    # ),
+    value = c(1810, 1820),
+    step = 10,
+    animate = animationOptions(interval = 6000),
     sep = ""
   )
   
@@ -51,7 +54,7 @@ journeys_filtered_letters <- eventReactive(c(
   
   journeys_filtered_letters <- letters_df %>%
     filter(!is.na(receiver.latitude) &
-             !is.na(sender.location))
+             !is.na(location.sender))
   
   if (input$journeys_checkbox_datefilter) {
     journeys_filtered_letters
@@ -110,99 +113,117 @@ observeEvent(c(input$highlight_selected_families,
                  return()
                }
                journeys_filtered_letters <- journeys_filtered_letters()
-
                
-               if(isTRUE(input$highlight_selected_families)){
-                 
-                 if(is.null(input$letter_journeys_selected_family)){
-                   return()
-                 }
-                 
-                 selected_family_journeys <- journeys_filtered_letters %>%
-                   filter(grepl(input$letter_journeys_selected_family, id.letter)) %>%
-                   letter_journey_lines()
-                 
-                 if(nrow(selected_family_journeys) == 0){
-                   leafletProxy("letter_journeys_map") %>%
-                     clearShapes() %>%
-                     clearMarkers() %>%
-                     removeControl("legend") %>%
-                     send_only_markers(journeys_filtered_letters) %>%
-                     receive_only_markers(journeys_filtered_letters) %>%
-                     two_way_markers(journeys_filtered_letters) %>%
-                     addPolylines(
-                       data = journeys_filtered_letters %>%
-                         filter(!grepl(input$letter_journeys_selected_family, id.letter)) %>%
-                         letter_journey_lines(),
-                       color = rgb(166, 206, 227, max = 255),
-                       popup = ~ label_journey(sender.location, receiver.location, number.of.letters),
-                       weight = 4,
-                       opacity = 0.3
-                     ) %>%
-                     addLegendCustom(
-                       .,
-                       colors = c("#fdae61", "#d7191c", "#7570b3", "#1f78b4", "#a6cee3"),
-                       labels = c("Sender", "Receiver", "Sender and Receiver", "Selected family", "Other family"),
-                       sizes = c(10, 10, 10),
-                       layerId = "legend"
-                     )
+               if(nrow(journeys_filtered_letters) == 0){
+                 leafletProxy("letter_journeys_map") %>%
+                   clearShapes() %>%
+                   clearMarkers() %>%
+                   removeControl("legend") %>%
+                   addLegendCustom(
+                     .,
+                     colors = c("#fdae61", "#d7191c", "#7570b3", "#1f78b4", "#a6cee3"),
+                     labels = c("Sender", "Receiver", "Sender and Receiver", "Selected family", "Other families"),
+                     sizes = c(10, 10, 10),
+                     layerId = "legend"
+                   )
+               } else {
+                 if(isTRUE(input$highlight_selected_families)){
+                   
+                   if(is.null(input$letter_journeys_selected_family)){
+                     return()
+                   }
+                   
+                   selected_family_journeys <- journeys_filtered_letters %>%
+                     filter(grepl(input$letter_journeys_selected_family, id.letter)) %>%
+                     letter_journey_lines()
+                   
+                   if(nrow(selected_family_journeys) == 0){
+                     leafletProxy("letter_journeys_map") %>%
+                       clearShapes() %>%
+                       clearMarkers() %>%
+                       removeControl("legend") %>%
+                       send_only_markers(journeys_filtered_letters) %>%
+                       receive_only_markers(journeys_filtered_letters) %>%
+                       two_way_markers(journeys_filtered_letters) %>%
+                       addPolylines(
+                         data = journeys_filtered_letters %>%
+                           filter(!grepl(input$letter_journeys_selected_family, id.letter)) %>%
+                           letter_journey_lines(),
+                         color = rgb(166, 206, 227, max = 255),
+                         popup = ~ label_journey(location.sender, location.receiver, number.of.letters),
+                         weight = 4,
+                         opacity = 0.3
+                       ) %>%
+                       addLegendCustom(
+                         .,
+                         colors = c("#fdae61", "#d7191c", "#7570b3", "#1f78b4", "#a6cee3"),
+                         labels = c("Sender", "Receiver", "Sender and Receiver", "Selected family", "Other family"),
+                         sizes = c(10, 10, 10),
+                         layerId = "legend"
+                       )
+                   } else {
+                     leafletProxy("letter_journeys_map") %>%
+                       clearShapes() %>%
+                       clearMarkers() %>%
+                       removeControl("legend") %>%
+                       send_only_markers(journeys_filtered_letters) %>%
+                       receive_only_markers(journeys_filtered_letters) %>%
+                       two_way_markers(journeys_filtered_letters) %>%
+                       addPolylines(
+                         data = journeys_filtered_letters %>%
+                           filter(!grepl(input$letter_journeys_selected_family, id.letter)) %>%
+                           letter_journey_lines(),
+                         color = rgb(166, 206, 227, max = 255),
+                         popup = ~ label_journey(location.sender, location.receiver, number.of.letters),
+                         weight = 4,
+                         opacity = 0.3
+                       ) %>%
+                       addPolylines(
+                         data = journeys_filtered_letters %>%
+                           filter(grepl(input$letter_journeys_selected_family, id.letter)) %>%
+                           letter_journey_lines(),
+                         color = rgb(31, 120, 180, max = 255),
+                         popup = ~ label_journey(location.sender, location.receiver, number.of.letters),
+                         weight = 4,
+                         opacity = 1
+                       ) %>%
+                       addLegendCustom(
+                         .,
+                         colors = c("#fdae61", "#d7191c", "#7570b3", "#1f78b4", "#a6cee3"),
+                         labels = c("Sender", "Receiver", "Sender and Receiver", "Selected family", "Other family"),
+                         sizes = c(10, 10, 10),
+                         layerId = "legend"
+                       )
+                   }
+                   
                  } else {
                    leafletProxy("letter_journeys_map") %>%
                      clearShapes() %>%
                      clearMarkers() %>%
-                     removeControl("legend") %>%
                      send_only_markers(journeys_filtered_letters) %>%
                      receive_only_markers(journeys_filtered_letters) %>%
                      two_way_markers(journeys_filtered_letters) %>%
                      addPolylines(
-                       data = journeys_filtered_letters %>%
-                         filter(!grepl(input$letter_journeys_selected_family, id.letter)) %>%
-                         letter_journey_lines(),
-                       color = rgb(166, 206, 227, max = 255),
-                       popup = ~ label_journey(sender.location, receiver.location, number.of.letters),
+                       data = letter_journey_lines(journeys_filtered_letters),
+                       color = rgb(44, 123, 182, max = 255),
+                       popup = ~ label_journey(location.sender, location.receiver, number.of.letters),
                        weight = 4,
                        opacity = 0.3
                      ) %>%
-                     addPolylines(
-                       data = journeys_filtered_letters %>%
-                         filter(grepl(input$letter_journeys_selected_family, id.letter)) %>%
-                         letter_journey_lines(),
-                       color = rgb(31, 120, 180, max = 255),
-                       popup = ~ label_journey(sender.location, receiver.location, number.of.letters),
-                       weight = 4,
-                       opacity = 1
-                     ) %>%
                      addLegendCustom(
                        .,
-                       colors = c("#fdae61", "#d7191c", "#7570b3", "#1f78b4", "#a6cee3"),
-                       labels = c("Sender", "Receiver", "Sender and Receiver", "Selected family", "Other family"),
+                       colors = c("#fdae61", "#d7191c", "#7570b3"),
+                       labels = c("Sender", "Receiver", "Sender and Receiver"),
                        sizes = c(10, 10, 10),
                        layerId = "legend"
                      )
                  }
-                 
-               } else {
-                 leafletProxy("letter_journeys_map") %>%
-                   clearShapes() %>%
-                   clearMarkers() %>%
-                   send_only_markers(journeys_filtered_letters) %>%
-                   receive_only_markers(journeys_filtered_letters) %>%
-                   two_way_markers(journeys_filtered_letters) %>%
-                   addPolylines(
-                     data = letter_journey_lines(journeys_filtered_letters),
-                     color = rgb(44, 123, 182, max = 255),
-                     popup = ~ label_journey(sender.location, receiver.location, number.of.letters),
-                     weight = 4,
-                     opacity = 0.3
-                   ) %>%
-                   addLegendCustom(
-                     .,
-                     colors = c("#fdae61", "#d7191c", "#7570b3"),
-                     labels = c("Sender", "Receiver", "Sender and Receiver"),
-                     sizes = c(10, 10, 10),
-                     layerId = "legend"
-                   )
                }
+               
+               
+               
+               
+               
                
              })
 
@@ -228,27 +249,26 @@ output$letter_journeys_map <- renderLeaflet({
   shinyjs::hide(id = "loading-journeys",
                 anim = TRUE,
                 animType = "fade")
-  print(head(journeys_filtered_letters))
-  
   leaflet() %>%
     addProviderTiles("Esri.WorldShadedRelief") %>%
-    send_only_markers(journeys_filtered_letters) %>%
-    receive_only_markers(journeys_filtered_letters) %>%
-    two_way_markers(journeys_filtered_letters) %>%
-    addPolylines(
-      data = letter_journey_lines(journeys_filtered_letters),
-      color = rgb(44, 123, 182, max = 255),
-      popup = ~ label_journey(sender.location, receiver.location, number.of.letters),
-      weight = 4,
-      opacity = 0.3
-    ) %>%
+    # send_only_markers(journeys_filtered_letters) %>%
+    # receive_only_markers(journeys_filtered_letters) %>%
+    # two_way_markers(journeys_filtered_letters) %>%
+    # addPolylines(
+    #   data = letter_journey_lines(journeys_filtered_letters),
+    #   color = rgb(44, 123, 182, max = 255),
+    #   popup = ~ label_journey(location.sender, location.receiver, number.of.letters),
+    #   weight = 4,
+    #   opacity = 0.3
+    # ) %>%
     addLegendCustom(
       .,
       colors = c("#fdae61", "#d7191c", "#7570b3"),
       labels = c("Sender", "Receiver", "Sender and Receiver"),
       sizes = c(10, 10, 10),
       layerId = "legend"
-    )
+    ) %>%
+    my_fitBounds(bbox_letter_journeys)
   
   # 
   # if(isTRUE(input$highlight_selected_families)){
@@ -265,7 +285,7 @@ output$letter_journeys_map <- renderLeaflet({
   #         filter(!grepl(input$letter_journeys_selected_family, id.letter)) %>%
   #         letter_journey_lines(),
   #       color = rgb(166, 206, 227, max = 255),
-  #       popup = ~ label_journey(sender.location, receiver.location, number.of.letters),
+  #       popup = ~ label_journey(location.sender, location.receiver, number.of.letters),
   #       weight = 4,
   #       opacity = 0.3
   #     ) %>%
@@ -274,7 +294,7 @@ output$letter_journeys_map <- renderLeaflet({
   #         filter(grepl(input$letter_journeys_selected_family, id.letter)) %>%
   #         letter_journey_lines(),
   #       color = rgb(31, 120, 180, max = 255),
-  #       popup = ~ label_journey(sender.location, receiver.location, number.of.letters),
+  #       popup = ~ label_journey(location.sender, location.receiver, number.of.letters),
   #       weight = 4,
   #       opacity = 1
   #     )
@@ -285,7 +305,7 @@ output$letter_journeys_map <- renderLeaflet({
   #     addPolylines(
   #       data = letter_journey_lines(journeys_filtered_letters),
   #       color = rgb(44, 123, 182, max = 255),
-  #       popup = ~ label_journey(sender.location, receiver.location, number.of.letters),
+  #       popup = ~ label_journey(location.sender, location.receiver, number.of.letters),
   #       weight = 4,
   #       opacity = 0.3
   #     ) %>%
@@ -310,14 +330,14 @@ output$letter_journeys_map <- renderLeaflet({
   #     addPolylines(
   #       data = letter_journey_lines(letters_df, selected.family = "exclude"),
   #       color = rgb(166, 206, 227, max = 255),
-  #       popup = ~ label_journey(sender.location, receiver.location, number.of.letters),
+  #       popup = ~ label_journey(location.sender, location.receiver, number.of.letters),
   #       weight = 4,
   #       opacity = 0.3
   #     ) %>%
   #     addPolylines(
   #       data = letter_journey_lines(letters_df, selected.family = "only"),
   #       color = rgb(31, 120, 180, max = 255),
-  #       popup = ~ label_journey(sender.location, receiver.location, number.of.letters),
+  #       popup = ~ label_journey(location.sender, location.receiver, number.of.letters),
   #       weight = 4,
   #       opacity = 1
   #     ) %>%
@@ -337,7 +357,7 @@ output$letter_journeys_map <- renderLeaflet({
   #     #   addPolylines(
   #     #     data = letter_journey_lines(letters_df),
   #     #     color = ~ifelse(selected.family == TRUE, rgb(31, 120, 180, max = 255), rgb(166, 206, 227, max = 255)),
-  #     #     popup = ~ label_journey(sender.location, receiver.location, number.of.letters),
+  #     #     popup = ~ label_journey(location.sender, location.receiver, number.of.letters),
   #     #     weight = 4,
   #     #     opacity = ~ifelse(selected.family == TRUE, 1, 0.3)
   #     #   )
@@ -350,7 +370,7 @@ output$letter_journeys_map <- renderLeaflet({
   #     addPolylines(
   #       data = letter_journey_lines(journeys_filtered_letters),
   #       color = rgb(44, 123, 182, max = 255),
-  #       popup = ~ label_journey(sender.location, receiver.location, number.of.letters),
+  #       popup = ~ label_journey(location.sender, location.receiver, number.of.letters),
   #       weight = 4,
   #       opacity = 0.3
   #     ) %>%
@@ -373,7 +393,7 @@ output$letter_journeys_map <- renderLeaflet({
   #   addPolylines(
   #     data = letter_journey_lines(journeys_filtered_letters),
   #     color = rgb(44, 123, 182, max = 255),
-  #     popup = ~ label_journey(sender.location, receiver.location, number.of.letters),
+  #     popup = ~ label_journey(location.sender, location.receiver, number.of.letters),
   #     weight = 4,
   #     opacity = 0.3
   #   ) %>%
