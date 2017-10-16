@@ -20,8 +20,6 @@ observeEvent(input$selected_family_checkbox_datefilter,
                }
                
                enable_date_slider <- !input$selected_family_checkbox_datefilter
-               print('enable_date_slider')
-               print(enable_date_slider)
                toggleState(id = "selected_family_date_slider", condition = enable_date_slider)
              }
 )
@@ -102,9 +100,6 @@ output$selected_family_letters_journeys_map <- renderLeaflet({
   }
   
   selected_family_letters <- selected_family_letters()
-  
-  print("nrow(selected_family_letters)")
-  print(nrow(selected_family_letters))
   
   if(!nrow(selected_family_letters) == 0){
     leaflet() %>%
