@@ -143,26 +143,26 @@ my_fitBounds <- function(map, bbox){
 
 journey_termini_data <- function(letters.data) {
   receive_points <- letters.data %>%
-    group_by(receiver.location) %>%
+    group_by(location.receiver) %>%
     mutate(total.received = n()) %>%
     ungroup() %>%
     select(contains("receiv")) %>%
     unique() %>%
     rename(
-      location.name = receiver.location,
+      location.name = location.receiver,
       latitude = receiver.latitude,
       longitude = receiver.longitude,
       country = receiver.country
     )
   
   send_points <- letters.data %>%
-    group_by(sender.location) %>%
+    group_by(location.sender) %>%
     mutate(total.sent = n()) %>%
     ungroup() %>%
     select(contains("sen")) %>%
     unique() %>%
     rename(
-      location.name = sender.location,
+      location.name = location.sender,
       latitude = sender.latitude,
       longitude = sender.longitude,
       country = sender.country
@@ -178,15 +178,15 @@ journey_termini_data <- function(letters.data) {
 }
 
 label_journey <-
-  function(sender.location = NA,
-           receiver.location = NA,
+  function(location.sender = NA,
+           location.receiver = NA,
            number.of.letters = NA) {
     paste0(
       "<p>Sender: ",
-      sender.location,
+      location.sender,
       "</p>",
       "<p>Receiver: ",
-      receiver.location,
+      location.receiver,
       "</p>",
       "<p>Number of letters: ",
       as.character(number.of.letters),
