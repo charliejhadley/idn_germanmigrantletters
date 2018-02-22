@@ -13,6 +13,7 @@ library("rlang")
 library("sf")
 library("forcats")
 library("rfigshare")
+library("geosphere")
 
 source(file = "data-processing.R", local = TRUE)
 

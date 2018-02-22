@@ -7,11 +7,19 @@ output$selected_family_date_range_UI <- renderUI({
     "selected_family_date_range",
     "Date Range",
     # min = year(min(selected_family_letters$date, na.rm = TRUE)),
-    min = floor(year(min(selected_family_letters$date, na.rm = TRUE)) / 10) * 10,
+    min = floor(year(
+      min(selected_family_letters$date, na.rm = TRUE)
+    ) / 10) * 10,
     # max = year(max(selected_family_letters$date, na.rm = TRUE)),
-    max = floor(year(max(selected_family_letters$date, na.rm = TRUE)) / 10) * 10,
-    value = c(floor(year(min(selected_family_letters$date, na.rm = TRUE)) / 10) * 10,
-              floor(year(min(selected_family_letters$date, na.rm = TRUE)) / 10) * 10 + 10),
+    max = floor(year(
+      max(selected_family_letters$date, na.rm = TRUE)
+    ) / 10) * 10,
+    value = c(floor(year(
+      min(selected_family_letters$date, na.rm = TRUE)
+    ) / 10) * 10,
+    floor(year(
+      min(selected_family_letters$date, na.rm = TRUE)
+    ) / 10) * 10 + 10),
     step = 10,
     width = "100%",
     animate = animationOptions(interval = 3000),
@@ -87,6 +95,15 @@ selected_family_CircleMarkers_data <-
                     mutate(type = "current",
                            color = "#ff7f00")
                   
+                  print("current_decade below")
+                  print(current_decade)
+                  
+                  previous_decade <- previous_decade %>%
+                    anti_join(current_decade, by = c("sender.latitude", "sender.longitude"))
+                  
+                  print("previous_decade below")
+                  print(previous_decade)
+                  
                   other_locations <-
                     unique_selected_letter_locations %>%
                     mutate(type = "no.sent",
@@ -96,17 +113,22 @@ selected_family_CircleMarkers_data <-
                     anti_join(previous_decade,
                               by = c("sender.latitude", "sender.longitude"))
                   
-                  other_locations %>%
+                  circleMarkerData <- other_locations %>%
                     full_join(previous_decade) %>%
                     full_join(current_decade) %>%
                     distinct(sender.latitude, sender.longitude, .keep_all = TRUE) %>%
-                    arrange(desc(type)) # previous 
+                    arrange(desc(type)) # previous
+                  
+                  
+                  print("circleMarkerData below")
+                  print(circleMarkerData)
+                  
+                  circleMarkerData
                   
                 })
 
 observeEvent(input$selected_family_date_range,
              {
-               
                selected_family_CircleMarkers_data <-
                  selected_family_CircleMarkers_data() %>%
                  st_as_sf(coords = c("sender.longitude", "sender.latitude")) %>%
@@ -124,13 +146,12 @@ observeEvent(input$selected_family_date_range,
                    fillColor = ~ color,
                    color = "#000000"
                  )
-              
+               
              })
 
 
 output$sender_letter_viewer_UI <- renderUI({
-  
-  if(is.null(input$selected_family_leaflet_map_marker_click)){
+  if (is.null(input$selected_family_leaflet_map_marker_click)) {
     return()
   }
   
@@ -151,14 +172,10 @@ output$sender_letter_viewer_UI <- renderUI({
     .[[1]]
   
   selected_family_letters <- selected_families_letters %>%
-    filter(grepl(
-      input$selected_family_which_family, id.letter
-    )) %>%
+    filter(grepl(input$selected_family_which_family, id.letter)) %>%
     filter(date >= start.time.period & date <= end.time.period) %>%
-    filter(
-      sender.latitude == clicked_marker$lat &
-        sender.longitude == clicked_marker$lng
-    )
+    filter(sender.latitude == clicked_marker$lat &
+             sender.longitude == clicked_marker$lng)
   
   location_name <- locations_df %>%
     filter(latitude == clicked_marker$lat,
@@ -174,49 +191,58 @@ output$sender_letter_viewer_UI <- renderUI({
     select(id.letter) %>%
     .[[1]]
   
-  switch(clicked_type,
-         "no.sent" = {
-           paste("No letters were sent from", location_name, "location in the selected time period")
-         },
-         "previous" = {
-           paste("Letters were sent from", location_name, "location in the previous time period")
-         },
-         "current" = {
-           
-           if (is.null(input$sender_letter_viewer$page_current)) {
-             fluidPage(pageruiInput('sender_letter_viewer', 1, nletters_sent),
-                       hr(),
-                       "")
-           } else {
-             if (nletters_sent > 0) {
-               fluidPage(
-                 h5(
-                   paste0("Letters sent from ", location_name)
-                 ),
-                 pageruiInput('sender_letter_viewer', 1, nletters_sent),
-                 hr(),
-                 HTML(gsub("\n", "<br>",
-
-                           #           read_file(
-                           #   paste0("data-raw/target-family/", letter_ids[input$sender_letter_viewer$page_current], ".txt")
-                           # )
-                           #
-                           text_of_letters %>%
-                             filter(id == letter_ids[input$sender_letter_viewer$page_current]) %>%
-                             select(truncated.text) %>%
-                             .[[1]]
-                 ))
-               )
-             }
-           }
-           
-         })
+  switch(
+    clicked_type,
+    "no.sent" = {
+      paste("No letters were sent from",
+            location_name,
+            "location in the selected time period")
+    },
+    "previous" = {
+      paste("Letters were sent from",
+            location_name,
+            "location in the previous time period")
+    },
+    "current" = {
+      if (is.null(input$sender_letter_viewer$page_current)) {
+        fluidPage(pageruiInput('sender_letter_viewer', 1, nletters_sent),
+                  hr(),
+                  "")
+      } else {
+        if (nletters_sent > 0) {
+          fluidPage(
+            h5(paste0(
+              "Letters sent from ", location_name
+            )),
+            pageruiInput('sender_letter_viewer', 1, nletters_sent),
+            hr(),
+            HTML(
+              gsub(
+                "\n",
+                "<br>",
+                
+                #           read_file(
+                #   paste0("data-raw/target-family/", letter_ids[input$sender_letter_viewer$page_current], ".txt")
+                # )
+                #
+                text_of_letters %>%
+                  filter(id == letter_ids[input$sender_letter_viewer$page_current]) %>%
+                  select(truncated.text) %>%
+                  .[[1]]
+              )
+            )
+          )
+        }
+      }
+      
+    }
+  )
   
   
-
   
-
-
+  
+  
+  
   
 })
 
@@ -232,21 +258,20 @@ observeEvent(input$sender_letter_viewer$page_current,
                end.time.period <-
                  dmy(paste0("01-01", input$selected_family_date_range[2]))
                
-               clicked_type <- selected_family_CircleMarkers_data %>%
+               clicked_type <-
+                 selected_family_CircleMarkers_data %>%
                  filter(sender.latitude == clicked_marker$lat,
                         sender.longitude == clicked_marker$lng) %>%
                  select(type) %>%
                  .[[1]]
                
-               selected_family_letters <- selected_families_letters %>%
-                 filter(grepl(
-                   input$selected_family_which_family, id.letter
-                 )) %>%
-                 filter(date >= start.time.period & date <= end.time.period) %>%
-                 filter(
-                   sender.latitude == clicked_marker$lat &
-                     sender.longitude == clicked_marker$lng
-                 )
+               selected_family_letters <-
+                 selected_families_letters %>%
+                 filter(grepl(input$selected_family_which_family, id.letter)) %>%
+                 filter(date >= start.time.period &
+                          date <= end.time.period) %>%
+                 filter(sender.latitude == clicked_marker$lat &
+                          sender.longitude == clicked_marker$lng)
                
                nletters_sent <- selected_family_letters %>%
                  nrow()
@@ -263,4 +288,3 @@ observeEvent(input$sender_letter_viewer$page_current,
                )
              },
              ignoreInit = TRUE)
-
