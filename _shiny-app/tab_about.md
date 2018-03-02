@@ -13,13 +13,13 @@ The Forschungsbibliothek Gotha holds most of the letters in hard copy along with
 <b>Research Assistance:</b> Christian Fastenrath, Hannah Vögele, Leandra Bias, Oliver Ditthardt
 <br/>
 <br/>
-<b>DOI:</b> XXX
+<b>DOI:</b> <a href="https://doi.org/10.1007/s12286-018-0378-9" target="_blank">https://doi.org/10.1007/s12286-018-0378-9</a>
 <br/>
 <br/>
 <b>Data Deposit:</b> <a href="https://doi.org/10.6084/m9.figshare.4516772" target="_blank">https://doi.org/10.6084/m9.figshare.4516772</a>
 <br/>
 <br/>
-<b>Code Deposit:</b> <a href="https://doi.org/10.6084/m9.figshare.5336197" target="_blank">https://doi.org/10.6084/m9.figshare.5336197</a>
+<b>Code Deposit:</b> <a href="https://doi.org/10.6084/m9.figshare.5336194" target="_blank">https://doi.org/10.6084/m9.figshare.5336194</a>
 <br/>
 <br/>
 <b>Visualisation Developer:</b> Martin John Hadley
