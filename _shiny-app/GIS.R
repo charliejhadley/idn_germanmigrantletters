@@ -87,68 +87,46 @@ state_outline_only <- {
 ## Refer to http://personal.tcu.edu/kylewalker/interactive-flow-visualization-in-r.html
 
 letter_journey_lines <- function(letters.data, unique.or.all = "unique"){
+  unique.or.all <- rlang::arg_match(unique.or.all, c("unique", "all"))
   
+  journey_linestrings <- letters.data %>%
+    filter(!{
+      is.na(sender.latitude) | is.na(receiver.latitude)
+    }) %>%
+    select(
+      sender.longitude,
+      sender.latitude,
+      receiver.longitude,
+      receiver.latitude
+    ) %>%
+    transpose() %>%
+    map(~ matrix(flatten_dbl(.), nrow = 2, byrow = TRUE)) %>%
+    map(st_linestring) %>%
+    st_sfc(crs = 4326) %>%
+    st_sf(geometry = .) %>%
+    bind_cols(letters.data %>%
+                filter(!{
+                  is.na(sender.latitude) | is.na(receiver.latitude)
+                }) %>%
+                group_by(journey) %>%
+                mutate(number.of.letters = n())) %>%
+    select(everything(), geometry)
   
-  unique.or.all <- rlang::arg_match(unique.or.all,  c("unique", "all"))
-  
-  unique_journies <- letters.data %>%
-    filter(!{is.na(sender.latitude) | is.na(receiver.latitude)}) %>%
-    group_by(journey) %>%
-    mutate(number.of.letters = n()) %>%
-    ungroup() %>%
-    select(contains("sender"),
-           contains("receiver"),
-           number.of.letters,
-           -contains("name"),
-           selected.family,
-           date,
-           decade) %>%
-    unique()
-  
-  
-  if(nrow(unique_journies) == 0){
+  if (nrow(journey_linestrings) == 0) {
     tibble(
       lat = as.numeric(),
       lng = as.numeric()
     )
   } else {
-    send_unique_journies <- unique_journies %>%
-      select(sender.longitude, sender.latitude) %>%
-      rename(
-        longitude = sender.longitude,
-        latitude = sender.latitude) %>%
-      mutate(journey.id = row_number())
-    
-    receive_unique_journies <- unique_journies %>%
-      select(receiver.longitude, receiver.latitude) %>%
-      rename(
-        longitude = receiver.longitude,
-        latitude = receiver.latitude) %>%
-      mutate(journey.id = row_number())
-    
-    df_with_linestrings <- send_unique_journies %>%
-      bind_rows(receive_unique_journies) %>%
-      sf::st_as_sf(coords = c("longitude","latitude")) %>%
-      group_by(journey.id) %>%
-      arrange(journey.id) %>%
-      summarise() %>%
-      sf::st_cast("LINESTRING")
-    
-    st_geometry(unique_journies) <- st_geometry(df_with_linestrings)
-    
-    unique_journies <- st_set_crs(unique_journies, st_crs(shp_all_us_states))
-    
-    if(unique.or.all == "unique"){
-      unique_journies <- unique_journies %>%
+    if (unique.or.all == "unique") {
+      journey_linestrings <- journey_linestrings %>%
         select(-date, -decade) %>%
         unique()
     }
     
-    unique_journies %>%
-      st_segmentize(units::set_units(500, km))
+    journey_linestrings %>%
+      st_segmentize(units::set_units(250, km))
   }
-  
-  
 }
 
 ## letters bounding box
