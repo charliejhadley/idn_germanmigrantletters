@@ -260,7 +260,7 @@ two_way_markers <- function(map, termini.data) {
     fill = TRUE,
     radius = 1.8,
     stroke = TRUE,
-    color = "#7570b3",
+    color = "#e7298a",
     popup = ~ paste0(
       "<p>Two-way Location: ",
       location.name,
