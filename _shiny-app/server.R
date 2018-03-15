@@ -14,6 +14,7 @@ library("sf")
 library("forcats")
 library("rfigshare")
 library("geosphere")
+library("scales")
 
 source(file = "data-processing.R", local = TRUE)
 
