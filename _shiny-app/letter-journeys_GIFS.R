@@ -163,6 +163,31 @@ gif_letter_journies(1810, 1960, time.period = 10, cumulative = TRUE)
 
 gif_letter_journies(1810, 1960, time.period = 10, cumulative = FALSE)
 
+## ==== Add blank slide =====
+
+cumulative_gif <- image_read("letter-journies__1810-1960_cumulative-TRUE_gif.gif")
+
+
+black_slide <- image_read("canvas.png")
+
+
+cumulative_gif %>%
+  append(., image_modulate(.[16], brightness = 35)) %>%
+  append(., image_modulate(.[16], brightness = 0)) %>%
+  image_write("with_fin_letter-journies__1810-1960_cumulative-TRUE_gif.gif")
+
+noncumulative_gif <- image_read("letter-journies__1810-1960_cumulative-FALSE_gif.gif")
+
+noncumulative_gif %>%
+  append(., image_modulate(.[16], brightness = 35)) %>%
+  append(., image_modulate(.[16], brightness = 0)) %>%
+  image_write("with_fin_letter-journies__1810-1960_cumulative-FALSE_gif.gif")
+
+
+
+
+
+
 
 
 
