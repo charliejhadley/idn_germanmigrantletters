@@ -13,6 +13,7 @@ library("rlang")
 library("sf")
 library("forcats")
 library("rfigshare")
+library("magick")
 
 source(file = "data-processing.R", local = TRUE)
 
@@ -61,26 +62,24 @@ make_img_letter_journies <- function(start.year,
     receive_only_markers(journeys_filtered_letters) %>%
     two_way_markers(journeys_filtered_letters) %>%
     addPolylines(
-      data = journeys_filtered_letters %>%
-        letter_journey_lines(),
-      color = rgb(31, 120, 180, max = 255),
+      data = letter_journey_lines(journeys_filtered_letters),
+      color = rgb(117, 112, 179, max = 255),
       popup = ~ label_journey(location.sender, location.receiver, number.of.letters),
-      weight = 4,
-      opacity = 1
+      weight = ~rescale(number.of.letters, to = c(1,4)),
+      opacity = 0.6
     ) %>%
     addLegendCustom(
       .,
-      colors = c("#fdae61", "#d7191c", "#7570b3", "#1f78b4", "#a6cee3"),
+      colors = c("#fdae61", "#d7191c", "#e7298a"),
       labels = c(
-        "Sender",
-        "Receiver",
-        "Sender and Receiver",
-        "Selected family",
-        "Other family"
+        "<span style='font-size:20px'>Sender</span>",
+        "<span style='font-size:20px'>Receiver</span>",
+        "<span style='font-size:20px'>Sender and Receiver</span>"
       ),
       sizes = c(10, 10, 10),
       layerId = "legend",
-      title = letter_journies_legend_title(start.year, end.year, cumulative)
+      title = paste0("<span style='font-size:20px'>", letter_journies_legend_title(start.year, end.year, cumulative), "</span>")
+      # title = "<h1>My Title!</h1>"
     ) %>%
     my_fitBounds(bbox_letter_journeys)
   
@@ -90,7 +89,7 @@ make_img_letter_journies <- function(start.year,
 ## ==============================
 
 make_img_letter_journies(1810,
-                    1820,
+                    1840,
                     cumulative = TRUE)
 
 ## ========== Generate 
