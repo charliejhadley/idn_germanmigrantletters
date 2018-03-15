@@ -173,23 +173,23 @@ observeEvent(c(input$highlight_selected_families,
                          data = journeys_filtered_letters %>%
                            filter(!grepl(input$letter_journeys_selected_family, id.letter)) %>%
                            letter_journey_lines(),
-                         color = rgb(166, 206, 227, max = 255),
+                         color = "#a6cee3",
                          popup = ~ label_journey(location.sender, location.receiver, number.of.letters),
-                         weight = 4,
-                         opacity = 0.3
+                         weight = ~rescale(number.of.letters, to = c(2,4.5)),
+                         opacity = 0.4
                        ) %>%
                        addPolylines(
                          data = journeys_filtered_letters %>%
                            filter(grepl(input$letter_journeys_selected_family, id.letter)) %>%
                            letter_journey_lines(),
-                         color = rgb(31, 120, 180, max = 255),
+                         color = "#7570b3",
                          popup = ~ label_journey(location.sender, location.receiver, number.of.letters),
-                         weight = 4,
-                         opacity = 1
+                         weight = ~rescale(number.of.letters, to = c(2,4.5)),
+                         opacity = 0.9
                        ) %>%
                        addLegendCustom(
                          .,
-                         colors = c("#fdae61", "#d7191c", "#7570b3", "#1f78b4", "#a6cee3"),
+                         colors = c("#fdae61", "#d7191c", "#e7298a", "#7570b3", "#a6cee3"),
                          labels = c("Sender", "Receiver", "Sender and Receiver", "Selected family", "Other family"),
                          sizes = c(10, 10, 10),
                          layerId = "legend"
@@ -205,14 +205,14 @@ observeEvent(c(input$highlight_selected_families,
                      two_way_markers(journeys_filtered_letters) %>%
                      addPolylines(
                        data = letter_journey_lines(journeys_filtered_letters),
-                       color = rgb(44, 123, 182, max = 255),
+                       color = rgb(117, 112, 179, max = 255),
                        popup = ~ label_journey(location.sender, location.receiver, number.of.letters),
-                       weight = 4,
-                       opacity = 0.3
+                       weight = ~rescale(number.of.letters, to = c(1,4)),
+                       opacity = 0.6
                      ) %>%
                      addLegendCustom(
                        .,
-                       colors = c("#fdae61", "#d7191c", "#7570b3"),
+                       colors = c("#fdae61", "#d7191c", "#e7298a"),
                        labels = c("Sender", "Receiver", "Sender and Receiver"),
                        sizes = c(10, 10, 10),
                        layerId = "legend"
