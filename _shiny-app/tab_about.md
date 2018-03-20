@@ -25,9 +25,14 @@ The Forschungsbibliothek Gotha holds most of the letters in hard copy along with
 <b>Visualisation Developer:</b> Martin John Hadley
 <br/>
 <br/>
-<b>Notes:</b> The data set and visualization are made available on a CC-BY license. You are free to use them in other publications as long as you credit the authors. Please link back to this page or include the following citation:
+<b>Notes:</b> The data set and visualization are made available on a CC-BY license. You are free to use them in other publications as long as you credit the authors. Please link back to this page or include the following citation: https://doi.org/10.1007/s12286-018-0378-9
 <br/>
+<hr>
 
+The GIF below shows the journeys between locations in the USA and Germany in each decade, note the width of the line represents the number of letters sent between these two locations in the current decade.
+
+<center><img src='with_fin_letter-journies__1810-1960_cumulative-FALSE_gif.gif' style="max-width:600px" width="100%"></img></center>
+<hr>
 <center><img src="images/uni-oxford-logo.png" style="padding: 28px"/>
 <img src="images/leverhulme-trust.jpg" style="padding: 28px" width="300px"/>
 
